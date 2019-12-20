@@ -1,0 +1,89 @@
+{
+	"job": {
+		"setting": {
+			"speed": {
+				"channel": 3
+			},
+			"errorLimit": {
+				"record": 0,
+				"percentage": 0.02
+			}
+		},
+		"content": [{
+			"reader": {
+				"name": "mysqlreader",
+				"parameter": {
+					"username": "${datax.reader.username}",
+					"password": "${datax.reader.password}",
+					"splitPk": "",
+					"column": [
+						"id",
+						"null",
+						"password",
+						"age",
+						"null",
+						"address"
+					],
+					"connection": [{
+						"table": [
+							"userinfo_text"
+						],
+						"jdbcUrl": [
+							"jdbc:mysql://192.168.11.200:7233/hdsp_test?useUnicode=true&characterEncoding=utf-8&useSSL=false"
+						]
+					}],
+					"where": ""
+				}
+			},
+			"writer": {
+				"name": "hdfspluswriter",
+				"parameter": {
+					"defaultFS": "hdfs://192.168.12.245:8020",
+					"fileType": "TEXT",
+					"path": "/warehouse/tablespace/managed/hive/test.db/userinfo_text",
+					"fileName": "userinfo_text",
+					"column": [{
+							"name": "id",
+							"type": "bigint"
+						},
+						{
+							"name": "username",
+							"type": "string"
+						},
+						{
+							"name": "password",
+							"type": "string"
+						},
+						{
+							"name": "age",
+							"type": "int"
+						},
+						{
+							"name": "sex",
+							"type": "tinyint"
+						},
+						{
+							"name": "address",
+							"type": "string"
+						}
+					],
+					"writeMode": "${datax.writer.writeMode}",
+					"fieldDelimiter": "\u0001",
+					"compress": "",
+					"preSql": [
+						"truncate table test.userinfo_text;"
+					],
+					"postSql": [
+						
+					],
+					"hadoopConfig": {
+					
+					},
+					"haveKerberos": "false",
+					"kerberosKeytabFilePath": "",
+					"kerberosPrincipal": ""
+				}
+			}
+		}]
+	}
+}

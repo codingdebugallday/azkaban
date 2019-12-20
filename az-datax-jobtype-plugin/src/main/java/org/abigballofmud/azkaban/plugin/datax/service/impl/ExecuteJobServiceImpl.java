@@ -35,9 +35,9 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
     public List<String> generateDataxCommand(Props dataxJobProps, Logger logger) throws DataxJobProcessException {
         this.logger = logger;
         this.logger.debug("datax job start run...");
-        // 获取datax json的路径
+        // 获取datax scripts的值
         List<String> jsonFilePaths = getDataxJsonFilesFromProps(dataxJobProps);
-        // 生成命令
+        // 生成具体的命令
         ArrayList<String> list = new ArrayList<>(jsonFilePaths.size());
         String workDir = dataxJobProps.getString(JobPropsKey.WORKING_DIR.getKey());
         for (String jsonFilePath : jsonFilePaths) {

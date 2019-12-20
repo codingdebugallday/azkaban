@@ -1,0 +1,7 @@
+datax.home=/data/datax
+datax.reader.username=hdsp_dev
+datax.reader.password=hdsp_dev
+datax.writer.writeMode=append
+
+type=datax
+datax.scripts: scripts/mysql2hdfsplus_test.json
