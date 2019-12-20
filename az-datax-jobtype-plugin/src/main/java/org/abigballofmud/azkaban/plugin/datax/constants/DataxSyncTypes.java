@@ -13,6 +13,6 @@ public enum DataxSyncTypes {
     /**
      * mysql to hive
      */
-    MYSQL2HIVE;
+    MYSQL2HDFSPLUS;
 
 }

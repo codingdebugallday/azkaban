@@ -22,6 +22,7 @@ public interface ExecuteJobService {
      * @param dataxJobProps datax任务参数
      * @param logger        Logger
      * @return java.util.List<java.lang.String>
+     * @throws DataxJobProcessException DataxJobProcessException
      * @author isacc 2019/12/19 20:00
      */
     List<String> generateDataxCommand(Props dataxJobProps, Logger logger) throws DataxJobProcessException;
