@@ -8,8 +8,12 @@ package org.abigballofmud.azkaban.plugin.datax.constants;
  * @author isacc 2019/12/18 17:19
  * @since 1.0
  */
+@SuppressWarnings("unused")
 public enum JobPropsKey {
 
+    /**
+     * azkaban job 参数
+     */
     TYPE("type"),
     JVM_ARGS("jvm.args"),
     WORKING_DIR("working.dir"),

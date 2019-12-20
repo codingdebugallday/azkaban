@@ -15,14 +15,6 @@ public interface CommonConstants {
      */
     String JSON_FILE_SUFFIX = ".json";
     /**
-     * log文件后缀
-     */
-    String LOG_FILE_SUFFIX = ".log";
-    /**
-     * attach文件后缀
-     */
-    String ATTACH_FILE_SUFFIX = ".attach";
-    /**
      * 自定义参数前缀
      */
     String CUSTOM_PREFIX = "datax";

@@ -1,16 +1,14 @@
 package org.abigballofmud.azkaban.plugin.datax.util;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.abigballofmud.azkaban.plugin.datax.constants.CommonConstants;
 import org.abigballofmud.azkaban.plugin.datax.exception.DataxRuntimeException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * <p>
@@ -21,8 +19,6 @@ import org.apache.log4j.Logger;
  * @since 1.0
  */
 public class DataxUtil {
-
-    private static final Lock LOCK = new ReentrantLock();
 
     private DataxUtil() {
         throw new IllegalStateException("util class!");
@@ -76,27 +72,4 @@ public class DataxUtil {
                 fileName);
     }
 
-    public static void executeJson(Logger logger, File execJsonFile, String logPath) {
-        LOCK.lock();
-        try {
-            String command = String.format("python $DATAX_HOME/bin/datax.py %s", execJsonFile.getAbsolutePath());
-            logger.info(command);
-            try (BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(new File(logPath)), StandardCharsets.UTF_8))) {
-                Process process = Runtime.getRuntime().exec(command);
-                process.waitFor();
-                BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
-                String line;
-                while ((line = br.readLine()) != null) {
-                    logger.info(line);
-                    bw.write(line);
-                }
-            } catch (InterruptedException | IOException e) {
-                logger.error("datax execute fail", e);
-                // ignore
-            }
-        } finally {
-            LOCK.unlock();
-        }
-    }
 }
