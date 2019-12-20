@@ -1,0 +1,12 @@
+config:
+  datax.home: /data/datax
+  datax.sync.type: mysql2hive
+  datax.reader.username: hdsp_dev
+  datax.reader.password: hdsp_dev
+  datax.writer.writeMode: append
+
+nodes:
+  - name: mysql2hdfsplus_test
+    type: datax
+    config:
+      datax.scripts: quickstart_datax_example/scripts/mysql2hdfsplus_test.json
