@@ -1,6 +1,5 @@
 config:
   datax.home: /data/datax
-  datax.sync.type: mysql2hdfsplus
   datax.reader.username: hdsp_dev
   datax.reader.password: hdsp_dev
   datax.writer.writeMode: append
