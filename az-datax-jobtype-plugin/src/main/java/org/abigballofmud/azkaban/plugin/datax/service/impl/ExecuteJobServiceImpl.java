@@ -60,7 +60,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             File execJsonFile = DataxUtil.generateTempJsonFileForExecute(
                     jsonStr, dataxJobProps.get(JobPropsKey.WORKING_DIR.getKey()), jsonFile.getName());
             return String.format("python %s/bin/datax.py %s",
-                    dataxJobProps.get(DataxJobPropKeys.DATAX_HOME.getKey()),
+                    Optional.ofNullable(dataxJobProps.get(DataxJobPropKeys.DATAX_HOME.getKey())).orElse("$DATAX_HOME"),
                     execJsonFile.getAbsolutePath());
         } catch (IOException e) {
             logger.error(String.format("datax job command generate fail, %s", realFilePath), e);

@@ -23,5 +23,6 @@
 `hdfspluswriter`是自己开发的datax插件，
 点击[项目地址](https://github.com/codingdebugallday/DataX)去查看获取，
 或者可修改此json文件，在自己的datax中可运行的即可
+- **注意** job或flow文件必须写datax.home或者去配置环境变量DATAX_HOME指定datax的安装路径
 
 #### 联系 qq: 283273332@qq.com
