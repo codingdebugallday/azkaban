@@ -18,9 +18,9 @@ import org.apache.commons.lang.StringUtils;
  * @author isacc 2019/12/19 10:40
  * @since 1.0
  */
-public class DataxUtil {
+public class DataxJobUtil {
 
-    private DataxUtil() {
+    private DataxJobUtil() {
         throw new IllegalStateException("util class!");
     }
 
