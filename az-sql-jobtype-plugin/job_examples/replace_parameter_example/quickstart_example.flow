@@ -1,0 +1,22 @@
+config: 
+  sql.database.type: mysql # 支持mysql、postgresql
+  sql.database.driver: com.mysql.jdbc.Driver
+  sql.database.host: 192.168.11.200
+  sql.database.port: 7233
+  sql.database.database: hdsp_test
+  sql.database.schema:  # postgresql建议必填
+  sql.database.username: hdsp_dev
+  sql.database.password: hdsp_dev
+  sql.tableName: azkaban_sql_job_test
+
+nodes:
+  - name: create_and_insert_job
+    type: sql
+    config:
+      sql.scripts: replace_parameter_example/scripts/create_and_insert.sql # 脚本路径
+  - name: update_value_job
+    type: sql
+    dependsOn:
+    - create_and_insert_job
+    config:
+      sql.scripts: replace_parameter_example/scripts/update_value.sql # 脚本路径

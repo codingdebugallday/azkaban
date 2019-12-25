@@ -1,0 +1,64 @@
+plugins {
+    id 'java'
+    id 'distribution'
+    id 'war'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://plugins.gradle.org/m2/'
+    }
+}
+
+distributions {
+    main {
+        contents {
+            into('sql') {
+                from 'src/main/resources'
+            }
+            into('sql/lib') {
+                from jar
+                from {
+                    configurations.runtime.findAll {
+                        return it.name.contains("mysql")\
+                              || it.name.contains("gson")\
+                              || it.name.contains("ant")\
+                              || it.name.contains("postgresql")
+                    }
+                }
+            }
+        }
+    }
+}
+
+ext {
+    gsonVersion = '2.8.6'
+    mysqlDriverVersion = '5.1.48'
+    postgresqlDriverVersion = '42.2.9'
+    antVersion = '1.10.7'
+    azkabanCoreVersion = '3.58.0'
+    azkabanSpiVersion = '3.50.3'
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile "com.google.code.gson:gson:${gsonVersion}"
+    compile "org.apache.ant:ant:${antVersion}"
+    compile "mysql:mysql-connector-java:${mysqlDriverVersion}"
+    compile "org.postgresql:postgresql:${postgresqlDriverVersion}"
+    compile project(':az-core')
+    compile project(':azkaban-common')
+//    compile(project(":azkaban-common")) {
+//        exclude group: "com.linkedin", module: "azkaban-spi"
+//    }
+//    compile project(":azkaban-spi")
+//    providedCompile("com.linkedin.azkaban:azkaban-common:${azkabanCoreVersion}") {
+//        exclude group: "com.linkedin.azkaban", module: "azkaban-spi"
+//    }
+//    providedCompile "com.linkedin.azkaban:az-core:${azkabanCoreVersion}"
+//    providedCompile "com.linkedin.azkaban:azkaban-spi:${azkabanSpiVersion}"
+}
