@@ -12,7 +12,7 @@ import org.abigballofmud.azkaban.plugin.datax.constants.DataxJobPropKeys;
 import org.abigballofmud.azkaban.plugin.datax.constants.JobPropsKey;
 import org.abigballofmud.azkaban.plugin.datax.exception.DataxJobProcessException;
 import org.abigballofmud.azkaban.plugin.datax.service.ExecuteJobService;
-import org.abigballofmud.azkaban.plugin.datax.util.DataxUtil;
+import org.abigballofmud.azkaban.plugin.datax.util.DataxJobUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -27,14 +27,14 @@ import org.apache.log4j.Logger;
  */
 public class ExecuteJobServiceImpl implements ExecuteJobService {
 
-    private Logger logger;
+    private Logger log;
 
     private static final Pattern WINDOWS_ABSOLUTE_PATH_PATTERN = Pattern.compile("^[\\s\\S]:[\\s\\S]*$");
 
     @Override
     public List<String> generateDataxCommand(Props dataxJobProps, Logger logger) throws DataxJobProcessException {
-        this.logger = logger;
-        this.logger.debug("datax job start run...");
+        this.log = logger;
+        log.debug("datax job start run...");
         // 获取datax scripts的值
         List<String> jsonFilePaths = getDataxJsonFilesFromProps(dataxJobProps);
         // 生成具体的命令
@@ -43,27 +43,27 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         for (String jsonFilePath : jsonFilePaths) {
             String realFilePath = this.isAbsolutePath(jsonFilePath) ? jsonFilePath :
                     workDir + CommonConstants.PATH_SPLIT_SYMBOL + jsonFilePath;
-            list.add(generateSingleDataCommand(dataxJobProps, logger, realFilePath));
+            list.add(generateSingleDataCommand(dataxJobProps, realFilePath));
         }
         return list;
     }
 
-    private String generateSingleDataCommand(Props dataxJobProps, Logger logger, String realFilePath) throws DataxJobProcessException {
+    private String generateSingleDataCommand(Props dataxJobProps, String realFilePath) throws DataxJobProcessException {
         try {
             // 加载配置的json脚本文件
-            File jsonFile = DataxUtil.loadJsonFile(realFilePath);
+            File jsonFile = DataxJobUtil.loadJsonFile(realFilePath);
             // 替换Json脚本参数
             Map<String, String> params = dataxJobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
-            String jsonStr = DataxUtil.replacePlaceHolderForJson(
+            String jsonStr = DataxJobUtil.replacePlaceHolderForJson(
                     FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8.name()), params);
             // 待执行的Json脚本写入临时文件
-            File execJsonFile = DataxUtil.generateTempJsonFileForExecute(
+            File execJsonFile = DataxJobUtil.generateTempJsonFileForExecute(
                     jsonStr, dataxJobProps.get(JobPropsKey.WORKING_DIR.getKey()), jsonFile.getName());
             return String.format("python %s/bin/datax.py %s",
                     Optional.ofNullable(dataxJobProps.get(DataxJobPropKeys.DATAX_HOME.getKey())).orElse("$DATAX_HOME"),
                     execJsonFile.getAbsolutePath());
         } catch (IOException e) {
-            logger.error(String.format("datax job command generate fail, %s", realFilePath), e);
+            log.error(String.format("datax job command generate fail, %s", realFilePath), e);
             throw new DataxJobProcessException("datax job command generate fail", e);
         }
     }
@@ -97,7 +97,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
     private List<String> getDataxJsonFilesFromProps(Props jobProps) {
         String scriptsString = jobProps.getString(DataxJobPropKeys.DATAX_JOB_SCRIPTS.getKey());
         if (StringUtils.isBlank(scriptsString)) {
-            logger.warn("任务未配置需要执行的JSON脚本文件！");
+            log.warn("任务未配置需要执行的JSON脚本文件！");
         }
         // 脚本文件拆分
         String[] scriptArr = scriptsString.split(CommonConstants.SCRIPT_SPLIT_SYMBOL);
