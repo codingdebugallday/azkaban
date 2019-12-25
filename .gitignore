@@ -45,4 +45,4 @@ currentpid
 __pycache__/
 
 #test artifacts
-LOCAL_STORAGE/
+*.zip
