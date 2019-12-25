@@ -1,6 +1,6 @@
 config:
   sql.execute.type: http # 支持jdbc、http(默认为http，平台客制化功能，接口帮我们去查询数据库)
-  sql.http.url: http://192.168.11.212:8510/v2/18/datasources/exec-sql
+  sql.http.url: http://192.168.11.212:8510
   sql.http.body: '{"customize":true,"datasourceId":105,"schema":"hdsp_test","tenantId":18}'
   sql.tableName: azkaban_sql_job_test
 

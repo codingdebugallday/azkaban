@@ -120,7 +120,9 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             dataSourceDTO.setSql(exeSql);
             RestTemplate restTemplate = RestTemplateUtil.getRestTemplate();
             HttpEntity<String> requestEntity = new HttpEntity<>(gson.toJson(dataSourceDTO), RestTemplateUtil.httpHeaders());
-            ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(url, requestEntity, String.class);
+            ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(
+                    String.format("%s/v2/%s/datasources/exec-sql", url, dataSourceDTO.getTenantId()),
+                    requestEntity, String.class);
             log.info("[sql job]result: " + stringResponseEntity.getBody());
         }
     }
