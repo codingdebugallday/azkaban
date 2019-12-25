@@ -1,4 +1,5 @@
-config: 
+config:
+  sql.execute.type: jdbc # 支持jdbc、http(默认为http，平台客制化功能，接口帮我们去查询数据库)
   sql.database.type: mysql # 支持mysql、postgresql
   sql.database.driver: com.mysql.jdbc.Driver
   sql.database.host: 192.168.11.200

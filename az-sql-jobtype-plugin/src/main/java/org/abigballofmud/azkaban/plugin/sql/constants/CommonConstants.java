@@ -11,6 +11,12 @@ package org.abigballofmud.azkaban.plugin.sql.constants;
 public interface CommonConstants {
 
     /**
+     * 执行sql的方式，有jdbc和http(默认，接口帮我们去查询数据库)
+     */
+    String HTTP = "http";
+    String JDBC = "jdbc";
+
+    /**
      * sql脚本后缀
      */
     String SQL_FILE_SUFFIX = ".sql";

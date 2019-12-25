@@ -3,22 +3,25 @@ package org.abigballofmud.azkaban.plugin.sql.service.impl;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import azkaban.utils.Props;
+import com.google.gson.Gson;
+import org.abigballofmud.azkaban.plugin.sql.constants.CommonConstants;
+import org.abigballofmud.azkaban.plugin.sql.constants.JobPropsKey;
+import org.abigballofmud.azkaban.plugin.sql.constants.SqlJobPropKeys;
 import org.abigballofmud.azkaban.plugin.sql.exception.SqlJobProcessException;
+import org.abigballofmud.azkaban.plugin.sql.model.DataSourceDTO;
 import org.abigballofmud.azkaban.plugin.sql.model.DatabasePojo;
+import org.abigballofmud.azkaban.plugin.sql.service.ExecuteJobService;
+import org.abigballofmud.azkaban.plugin.sql.util.RestTemplateUtil;
 import org.abigballofmud.azkaban.plugin.sql.util.SqlJobUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.abigballofmud.azkaban.plugin.sql.constants.CommonConstants;
-import org.abigballofmud.azkaban.plugin.sql.constants.JobPropsKey;
-import org.abigballofmud.azkaban.plugin.sql.constants.SqlJobPropKeys;
-import org.abigballofmud.azkaban.plugin.sql.service.ExecuteJobService;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * <p>
@@ -31,6 +34,7 @@ import org.abigballofmud.azkaban.plugin.sql.service.ExecuteJobService;
 public class ExecuteJobServiceImpl implements ExecuteJobService {
 
     private Logger log;
+    private final Gson gson = new Gson();
 
     @Override
     public void executeJob(Props jobProps, Logger logger) throws SqlJobProcessException {
@@ -58,23 +62,67 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             String sqlStr = FileUtils.readFileToString(sqlFile, StandardCharsets.UTF_8.name());
             Map<String, String> params = jobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
             String realSql = SqlJobUtil.replacePlaceHolderForSql(sqlStr, params);
-            // 待执行的SQL脚本写入临时文件
-            File execSqlFile = SqlJobUtil.generateTempSqlFileForExecute(realSql, jobProps.get(JobPropsKey.WORKING_DIR.getKey()), sqlFile.getName());
-            //执行SQL脚本
-            DatabasePojo databasePojo = new DatabasePojo(jobProps);
-            log.info("[sql job]Database URL:" + databasePojo.getUrl());
-            log.info("[sql job]Database USER:" + databasePojo.getUsername());
-            log.info("[sql job]  ");
-            log.info("[sql job]================= execute sql scripts ===================");
-            log.info("[sql job]\r\n" + execSqlFile);
-            log.info("[sql job]================= execute sql scripts ===================");
-            log.info("[sql job]  ");
-            String logPath = genExecuteSqlLogPath(jobProps.get(JobPropsKey.JOB_ATTACHMENT_FILE.getKey()));
-            SqlJobUtil.executeSql(execSqlFile, databasePojo, logPath);
+            // 执行SQL脚本
+            String executeType = Optional.ofNullable(jobProps.get(SqlJobPropKeys.SQL_EXECUTE_TYPE.getKey()))
+                    .orElse(CommonConstants.HTTP);
+            if (CommonConstants.HTTP.equalsIgnoreCase(executeType)) {
+                // 默认执行方式为http 接口请求 平台客制化功能 不用在意
+                executeHttpTypeSql(jobProps, realSql);
+            } else if (CommonConstants.JDBC.equalsIgnoreCase(executeType)) {
+                // 一般走jdbc的方式
+                // 待执行的SQL脚本写入临时文件
+                File execSqlFile = SqlJobUtil.generateTempSqlFileForExecute(realSql,
+                        jobProps.get(JobPropsKey.WORKING_DIR.getKey()), sqlFile.getName());
+                DatabasePojo databasePojo = new DatabasePojo(jobProps);
+                log.info("[sql job]jdbc url: " + databasePojo.getUrl());
+                log.info("[sql job]user: " + databasePojo.getUsername());
+                log.info("[sql job]sql: " + realSql);
+                String logPath = genExecuteSqlLogPath(jobProps.get(JobPropsKey.JOB_ATTACHMENT_FILE.getKey()));
+                SqlJobUtil.executeSql(execSqlFile, databasePojo, logPath);
+            } else {
+                throw new SqlJobProcessException("Sql execute type error, execute type must in [http, jdbc]");
+            }
         } catch (IOException e) {
             throw new SqlJobProcessException("Sql file to string error", e);
         }
 
+    }
+
+    /**
+     * 平台客制化功能，不用关心，因为平台自定义了很多驱动，这里执行sql需要请求接口
+     * 一般只需设置sql.execute.type为jdbc即可
+     *
+     * @param jobProps azkaban job参数
+     * @param sql      执行的sql
+     * @author isacc 2019/12/25 14:35
+     */
+    private void executeHttpTypeSql(Props jobProps, String sql) throws SqlJobProcessException {
+        // http://192.168.11.212:8510/v2/18/datasources/exec-sql
+        // {
+        //   "customize": true,
+        //   "datasourceId": 105,
+        //   "schema": "hdsp_test",
+        //   "sql": "INSERT INTO userinfo_text(id,`username`, `password`, `age`, `sex`, `address`) VALUES ( 7,'isacc11', '123456', 24, 1, 'chengdu')",
+        //   "tenantId": 18
+        // }
+        String url = Optional.ofNullable(jobProps.get(SqlJobPropKeys.SQL_HTTP_URL.getKey()))
+                .orElseThrow(() -> new SqlJobProcessException("Sql http url is null"));
+        String body = Optional.ofNullable(jobProps.get(SqlJobPropKeys.SQL_HTTP_BODY.getKey()))
+                .orElseThrow(() -> new SqlJobProcessException("Sql http body is null"));
+        DataSourceDTO dataSourceDTO = gson.fromJson(body, DataSourceDTO.class);
+        log.info(dataSourceDTO);
+        String[] split = sql.trim().split(";");
+        for (String exeSql : split) {
+            if (StringUtils.isBlank(exeSql)) {
+                continue;
+            }
+            log.info("[sql job]sql: " + exeSql);
+            dataSourceDTO.setSql(exeSql);
+            RestTemplate restTemplate = RestTemplateUtil.getRestTemplate();
+            HttpEntity<String> requestEntity = new HttpEntity<>(gson.toJson(dataSourceDTO), RestTemplateUtil.httpHeaders());
+            ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(url, requestEntity, String.class);
+            log.info("[sql job]result: " + stringResponseEntity.getBody());
+        }
     }
 
     /**
@@ -91,7 +139,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
     }
 
     public List<String> getSqlFilesFormProps(Props jobProps) throws SqlJobProcessException {
-        String scriptsString = jobProps.getString(SqlJobPropKeys.SQL_JOB_SCRIPTS.getKey());
+        String scriptsString = jobProps.getString(SqlJobPropKeys.SQL_SCRIPTS.getKey());
         // 判空
         if (StringUtils.isBlank(scriptsString)) {
             log.error("The sql job has no sql script file to be executed!");

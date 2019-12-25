@@ -37,20 +37,20 @@ public class DatabasePojo {
      * @param jobProps job参数
      */
     public DatabasePojo(Props jobProps) {
-        DatabaseTypes type = DatabaseTypes.valueOf(jobProps.get(SqlJobPropKeys.SQL_JOB_DATABASE_TYPE.getKey()).toUpperCase());
-        String host = jobProps.getString(SqlJobPropKeys.SQL_JOB_DATABASE_HOST.getKey());
-        Integer port = jobProps.getInt(SqlJobPropKeys.SQL_JOB_DATABASE_PORT.getKey());
-        String database = jobProps.getString(SqlJobPropKeys.SQL_JOB_DATABASE_DATABASE.getKey());
-        String schema = jobProps.getString(SqlJobPropKeys.SQL_JOB_DATABASE_SCHEMA.getKey());
+        DatabaseTypes type = DatabaseTypes.valueOf(jobProps.get(SqlJobPropKeys.SQL_DATABASE_TYPE.getKey()).toUpperCase());
+        String host = jobProps.getString(SqlJobPropKeys.SQL_DATABASE_HOST.getKey());
+        Integer port = jobProps.getInt(SqlJobPropKeys.SQL_DATABASE_PORT.getKey());
+        String database = jobProps.getString(SqlJobPropKeys.SQL_DATABASE_DATABASE.getKey());
+        String schema = jobProps.getString(SqlJobPropKeys.SQL_DATABASE_SCHEMA.getKey());
         try {
-            jobProps.getString(SqlJobPropKeys.SQL_JOB_DATABASE_SCHEMA.getKey());
+            jobProps.getString(SqlJobPropKeys.SQL_DATABASE_SCHEMA.getKey());
         } catch (UndefinedPropertyException e) {
             // nothing to do
         }
         this.driver = type.getDriver();
         this.url = type.genJdbcUrl(host, port, database, schema);
-        this.username = jobProps.get(SqlJobPropKeys.SQL_JOB_DATABASE_USERNAME.getKey());
-        this.password = jobProps.get(SqlJobPropKeys.SQL_JOB_DATABASE_PASSWORD.getKey());
+        this.username = jobProps.get(SqlJobPropKeys.SQL_DATABASE_USERNAME.getKey());
+        this.password = jobProps.get(SqlJobPropKeys.SQL_DATABASE_PASSWORD.getKey());
     }
 
     public String getDriver() {
