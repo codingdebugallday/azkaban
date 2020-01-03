@@ -96,7 +96,7 @@ public class DataxJobUtil {
     }
 
     private static String genTempJsonFileName(String workingDir, String fileName) {
-        return String.format("%s/%s%d%s",
+        return String.format("%s/%s_%d_%s",
                 workingDir,
                 CommonConstants.TEMP_JSON_FILE_NAME_PREFIX,
                 System.currentTimeMillis(),
