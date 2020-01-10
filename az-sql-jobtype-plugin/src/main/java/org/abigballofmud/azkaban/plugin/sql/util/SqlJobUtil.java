@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.plugin.sql.model.DatabasePojo;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -19,7 +20,7 @@ import org.abigballofmud.azkaban.plugin.sql.exception.SqlJobProcessException;
  * description
  * </p>
  *
- * @author isacc 2019/12/24 16:33
+ * @author abigballofmud 2019/12/24 16:33
  * @since 1.0
  */
 public class SqlJobUtil {
@@ -35,7 +36,7 @@ public class SqlJobUtil {
      *
      * @param path 路径
      * @return boolean
-     * @author isacc 2019/12/24 16:35
+     * @author abigballofmud 2019/12/24 16:35
      */
     public static boolean isAbsolutePath(String path) {
         if (StringUtils.isBlank(path)) {
@@ -54,7 +55,7 @@ public class SqlJobUtil {
      *
      * @param sqlFilePath sql文件路径
      * @return java.io.File
-     * @author isacc 2019/12/24 16:41
+     * @author abigballofmud 2019/12/24 16:41
      */
     public static File loadSqlFile(String sqlFilePath) throws SqlJobProcessException {
         if (StringUtils.isBlank(sqlFilePath)) {
@@ -79,14 +80,20 @@ public class SqlJobUtil {
      * @param sqlStr sql字符串
      * @param params 参数
      * @return java.lang.String
-     * @author isacc 2019/12/24 16:51
+     * @author abigballofmud 2019/12/24 16:51
      */
     public static String replacePlaceHolderForSql(String sqlStr, Map<String, String> params) {
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            String placeHolder = String.format("\\$\\{%s\\%s\\}", CommonConstants.CUSTOM_PREFIX, entry.getKey());
-            sqlStr = sqlStr.replaceAll(placeHolder, entry.getValue());
+        // 处理job传的参数
+        if (!(params == null || params.isEmpty())) {
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                String placeHolder = String.format("\\$\\{%s\\%s\\}", CommonConstants.CUSTOM_PREFIX, key);
+                sqlStr = sqlStr.replaceAll(placeHolder, value);
+            }
         }
-        return sqlStr;
+        // 处理内置参数
+        return ParamsUtil.handlePredefinedParams(sqlStr);
     }
 
     /**
@@ -96,7 +103,7 @@ public class SqlJobUtil {
      * @param workingDir azkaban workingDir
      * @param fileName   sql文件名称
      * @return java.io.File
-     * @author isacc 2019/12/24 16:56
+     * @author abigballofmud 2019/12/24 16:56
      */
     public static File generateTempSqlFileForExecute(String sql, String workingDir, String fileName) throws SqlJobProcessException {
         String tempFileName = genTempSqlFileName(workingDir, fileName);
@@ -110,7 +117,7 @@ public class SqlJobUtil {
     }
 
     private static String genTempSqlFileName(String workingDir, String fileName) {
-        return String.format("%s/%s%d%s",
+        return String.format("%s/%s_%d_%s",
                 workingDir,
                 CommonConstants.TEMP_SQL_FILE_NAME_PREFIXX,
                 System.currentTimeMillis(),
@@ -123,7 +130,7 @@ public class SqlJobUtil {
      * @param sqlFile      sql脚本文件
      * @param databasePojo 数据库配置
      * @param logfile      日志文件路径
-     * @author isacc 2019/12/24 17:18
+     * @author abigballofmud 2019/12/24 17:18
      */
     public static void executeSql(File sqlFile, DatabasePojo databasePojo, String logfile) {
         SQLExec sqlExec = new SQLExec();

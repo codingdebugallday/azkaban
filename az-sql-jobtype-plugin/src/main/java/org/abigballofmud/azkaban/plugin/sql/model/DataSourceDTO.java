@@ -5,7 +5,7 @@ package org.abigballofmud.azkaban.plugin.sql.model;
  * description
  * </p>
  *
- * @author isacc 2019/12/25 15:01
+ * @author abigballofmud 2019/12/25 15:01
  * @since 1.0
  */
 public class DataSourceDTO {

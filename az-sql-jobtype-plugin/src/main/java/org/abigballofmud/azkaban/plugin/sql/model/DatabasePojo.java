@@ -10,7 +10,7 @@ import org.abigballofmud.azkaban.plugin.sql.constants.SqlJobPropKeys;
  * 数据库配置Bean
  * </p>
  *
- * @author isacc 2019/12/24 17:07
+ * @author abigballofmud 2019/12/24 17:07
  * @since 1.0
  */
 public class DatabasePojo {

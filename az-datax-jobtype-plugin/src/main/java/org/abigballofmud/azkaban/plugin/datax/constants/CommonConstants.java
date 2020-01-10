@@ -5,7 +5,7 @@ package org.abigballofmud.azkaban.plugin.datax.constants;
  * description
  * </p>
  *
- * @author isacc 2019/12/19 10:16
+ * @author abigballofmud 2019/12/19 10:16
  * @since 1.0
  */
 public interface CommonConstants {

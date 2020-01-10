@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
  * datax调度任务实现主类
  * </p>
  *
- * @author isacc 2019/12/18 16:47
+ * @author abigballofmud 2019/12/18 16:47
  * @since 1.0
  */
 public class DataxJob extends ProcessJob {
@@ -38,7 +38,7 @@ public class DataxJob extends ProcessJob {
      * 这里返回datax执行的命令
      *
      * @return java.util.List<java.lang.String>
-     * @author isacc 2019/12/19 19:56
+     * @author abigballofmud 2019/12/19 19:56
      */
     @Override
     protected List<String> getCommandList() {

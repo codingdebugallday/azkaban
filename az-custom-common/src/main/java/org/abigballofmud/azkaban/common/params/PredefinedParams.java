@@ -1,14 +1,18 @@
-package org.abigballofmud.azkaban.plugin.datax.constants;
+package org.abigballofmud.azkaban.common.params;
+
+import java.util.regex.Pattern;
 
 /**
  * <p>
- * datax插件内置参数
+ * 插件内置参数
  * </p>
  *
- * @author isacc 2019/12/31 11:17
+ * @author abigballofmud 2020/01/10 15:48
  * @since 1.0
  */
-public interface DataxPredefinedParams {
+public interface PredefinedParams {
+
+    Pattern PREDEFINED_PARAM_REGEX = Pattern.compile("\\$\\{(.*?)}");
 
     /**
      * 当前时间，掩码格式自定，如：${_p_current_data_time:yyyy-MM-dd HH:mm:ss}

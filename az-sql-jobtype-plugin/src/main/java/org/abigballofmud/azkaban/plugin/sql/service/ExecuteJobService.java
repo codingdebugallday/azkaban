@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
  * description
  * </p>
  *
- * @author isacc 2019/12/24 16:08
+ * @author abigballofmud 2019/12/24 16:08
  * @since 1.0
  */
 public interface ExecuteJobService {
@@ -20,7 +20,7 @@ public interface ExecuteJobService {
      * @param jobProps job配置参数
      * @param logger   logger
      * @throws SqlJobProcessException SqlJobProcessException
-     * @author isacc 2019/12/24 16:09
+     * @author abigballofmud 2019/12/24 16:09
      */
     void executeJob(Props jobProps, Logger logger) throws SqlJobProcessException;
 }

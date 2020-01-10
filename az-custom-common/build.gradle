@@ -1,0 +1,11 @@
+ext {
+    gsonVersion = '2.8.6'
+}
+
+dependencies {
+    compile "com.google.code.gson:gson:${gsonVersion}"
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}

@@ -6,7 +6,7 @@ package org.abigballofmud.azkaban.plugin.sql.constants;
  * 自定义参数配置
  * </p>
  *
- * @author isacc 2019/12/24 16:24
+ * @author abigballofmud 2019/12/24 16:24
  * @since 1.0
  */
 public enum SqlJobPropKeys {

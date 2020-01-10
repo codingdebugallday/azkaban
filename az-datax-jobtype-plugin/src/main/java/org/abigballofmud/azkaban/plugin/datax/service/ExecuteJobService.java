@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
  * description
  * </p>
  *
- * @author isacc 2019/12/18 16:43
+ * @author abigballofmud 2019/12/18 16:43
  * @since 1.0
  */
 public interface ExecuteJobService {
@@ -23,7 +23,7 @@ public interface ExecuteJobService {
      * @param logger        Logger
      * @return java.util.List<java.lang.String>
      * @throws DataxJobProcessException DataxJobProcessException
-     * @author isacc 2019/12/19 20:00
+     * @author abigballofmud 2019/12/19 20:00
      */
     List<String> generateDataxCommand(Props dataxJobProps, Logger logger) throws DataxJobProcessException;
 }

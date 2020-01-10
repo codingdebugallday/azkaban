@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  * description
  * </p>
  *
- * @author isacc 2019/12/24 20:35
+ * @author abigballofmud 2019/12/24 20:35
  * @since 1.0
  */
 public class SqlJob extends AbstractJob {

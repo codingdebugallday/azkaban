@@ -8,7 +8,7 @@ import org.apache.commons.lang.StringUtils;
  * 数据库类型定义
  * </p>
  *
- * @author isacc 2019/12/24 17:07
+ * @author abigballofmud 2019/12/24 17:07
  * @since 1.0
  */
 public enum DatabaseTypes {

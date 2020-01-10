@@ -28,7 +28,7 @@ import org.springframework.web.client.RestTemplate;
  * description
  * </p>
  *
- * @author isacc 2019/12/24 16:10
+ * @author abigballofmud 2019/12/24 16:10
  * @since 1.0
  */
 public class ExecuteJobServiceImpl implements ExecuteJobService {
@@ -94,7 +94,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
      *
      * @param jobProps azkaban job参数
      * @param sql      执行的sql
-     * @author isacc 2019/12/25 14:35
+     * @author abigballofmud 2019/12/25 14:35
      */
     private void executeHttpTypeSql(Props jobProps, String sql) throws SqlJobProcessException {
         // http://192.168.11.212:8510/v2/18/datasources/exec-sql
@@ -102,7 +102,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         //   "customize": true,
         //   "datasourceId": 105,
         //   "schema": "hdsp_test",
-        //   "sql": "INSERT INTO userinfo_text(id,`username`, `password`, `age`, `sex`, `address`) VALUES ( 7,'isacc11', '123456', 24, 1, 'chengdu')",
+        //   "sql": "INSERT INTO userinfo_text(id,`username`, `password`, `age`, `sex`, `address`) VALUES ( 7,'abigballofmud11', '123456', 24, 1, 'chengdu')",
         //   "tenantId": 18
         // }
         String url = Optional.ofNullable(jobProps.get(SqlJobPropKeys.SQL_HTTP_URL.getKey()))
@@ -132,7 +132,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
      *
      * @param attachFile attachFile
      * @return java.lang.String
-     * @author isacc 2019/12/24 17:16
+     * @author abigballofmud 2019/12/24 17:16
      */
     private String genExecuteSqlLogPath(String attachFile) {
         return String.format("%s%s",

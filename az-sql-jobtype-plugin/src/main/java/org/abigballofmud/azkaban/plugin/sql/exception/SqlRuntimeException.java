@@ -7,7 +7,7 @@ import org.apache.http.HttpStatus;
  * DataxRuntimeException
  * </p>
  *
- * @author isacc 2019/12/19 10:51
+ * @author abigballofmud 2019/12/19 10:51
  * @since 1.0
  */
 public class SqlRuntimeException extends RuntimeException {

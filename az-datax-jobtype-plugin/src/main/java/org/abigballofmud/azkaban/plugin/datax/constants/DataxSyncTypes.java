@@ -5,7 +5,7 @@ package org.abigballofmud.azkaban.plugin.datax.constants;
  * description
  * </p>
  *
- * @author isacc 2019/12/19 14:36
+ * @author abigballofmud 2019/12/19 14:36
  * @since 1.0
  */
 public enum DataxSyncTypes {

@@ -5,7 +5,7 @@ package org.abigballofmud.azkaban.plugin.datax.exception;
  * Job自定义异常类
  * </p>
  *
- * @author isacc 2019/12/18 16:43
+ * @author abigballofmud 2019/12/18 16:43
  * @since 1.0
  */
 public class DataxJobProcessException extends Exception {

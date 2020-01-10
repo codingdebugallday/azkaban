@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
  * description
  * </p>
  *
- * @author isacc 2019/12/18 16:45
+ * @author abigballofmud 2019/12/18 16:45
  * @since 1.0
  */
 public class ExecuteJobServiceImpl implements ExecuteJobService {
@@ -73,7 +73,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
      *
      * @param jsonFilePath json文件路径
      * @return boolean
-     * @author isacc 2019/12/19 10:29
+     * @author abigballofmud 2019/12/19 10:29
      */
     private boolean isAbsolutePath(String jsonFilePath) {
         if (StringUtils.isBlank(jsonFilePath)) {
@@ -92,7 +92,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
      *
      * @param jobProps azkaban job参数
      * @return java.util.List<java.lang.String>
-     * @author isacc 2019/12/19 10:14
+     * @author abigballofmud 2019/12/19 10:14
      */
     private List<String> getDataxJsonFilesFromProps(Props jobProps) {
         String scriptsString = jobProps.getString(DataxJobPropKeys.DATAX_JOB_SCRIPTS.getKey());

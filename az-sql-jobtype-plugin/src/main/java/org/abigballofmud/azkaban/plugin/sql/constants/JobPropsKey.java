@@ -5,7 +5,7 @@ package org.abigballofmud.azkaban.plugin.sql.constants;
  * azkaban job配置参数key
  * </p>
  *
- * @author isacc 2019/12/18 17:19
+ * @author abigballofmud 2019/12/18 17:19
  * @since 1.0
  */
 @SuppressWarnings("unused")

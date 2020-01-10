@@ -8,7 +8,7 @@ import static org.abigballofmud.azkaban.plugin.datax.constants.CommonConstants.C
  * 自定义配置参数
  * </p>
  *
- * @author isacc 2019/12/19 10:21
+ * @author abigballofmud 2019/12/19 10:21
  * @since 1.0
  */
 public enum DataxJobPropKeys {
