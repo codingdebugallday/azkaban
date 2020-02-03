@@ -39,4 +39,5 @@ include 'cached-http-filesystem'
 include 'az-datax-jobtype-plugin'
 include 'az-sql-jobtype-plugin'
 include 'az-custom-common'
+include 'az-sqoop-jobtype-plugin'
 

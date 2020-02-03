@@ -1,0 +1,15 @@
+sqoop.param1=hdsp_dev
+sqoop.param2=hdsp_dev
+
+type=sqoop
+sqoop.command: sqoop export  \
+               --connect 'jdbc:mysql://192.168.11.200:7233/ynj' \
+               --username '${sqoop.param1}' \
+               --password '${sqoop.param2}' \
+               --columns 'id, name, sex, age, address, email' \
+               --hcatalog-database 'ynj' \
+               --hcatalog-table 'hive_userinfo_textfile_u0001' \
+               --table 'mysql_userinfo' \
+               --update-key 'id' \
+               --update-mode allowinsert \
+               --m 1 \

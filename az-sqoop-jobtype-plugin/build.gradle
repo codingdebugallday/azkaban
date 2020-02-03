@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+    id 'distribution'
+    id 'war'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://plugins.gradle.org/m2/'
+    }
+}
+
+distributions {
+    main {
+        contents {
+            into('sqoop') {
+                from 'src/main/resources'
+            }
+            into('sqoop/lib') {
+                from jar
+                from {
+                    configurations.runtime.findAll {
+                        return it.name.contains("az-custom-common")
+                    }
+                }
+            }
+        }
+    }
+}
+
+ext {
+    mysqlDriverVersion = '5.1.48'
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile project(':az-core')
+    compile project(":azkaban-common")
+    compile project(":az-custom-common")
+}
