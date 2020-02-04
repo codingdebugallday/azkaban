@@ -1,9 +1,12 @@
-package org.abigballofmud.azkaban.plugin.sql.util;
+package org.abigballofmud.azkaban.common.utils;
 
 import java.util.Objects;
 
+import com.google.gson.Gson;
+import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 

@@ -41,6 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import org.abigballofmud.azkaban.common.constants.JobPropsKey;
+import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.apache.log4j.Logger;
 
 
@@ -314,6 +317,12 @@ public class ProcessJob extends AbstractProcessJob {
         info("Process with id " + this.process.getProcessId() + " completed "
             + (this.success ? "successfully" : "unsuccessfully") + " in "
             + ((System.currentTimeMillis() - startMs) / 1000) + " seconds.");
+        // 更新内置参数表
+        String jobName = this.getJobProps().get(JobPropsKey.JOB_ID.getKey());
+        ParamsUtil.updateSpecifiedParams(this.getLog(),
+                "http://192.168.11.212:8510",
+                Long.valueOf(jobName.split("_")[0]),
+                jobName);
       }
     }
 

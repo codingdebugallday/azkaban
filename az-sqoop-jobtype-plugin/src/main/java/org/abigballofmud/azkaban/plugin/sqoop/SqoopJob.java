@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
  * description
  * </p>
  *
- * @author isacc 2020/02/03 14:56
+ * @author abigballofmud 2020/02/03 14:56
  * @since 1.0
  */
 public class SqoopJob extends ProcessJob {

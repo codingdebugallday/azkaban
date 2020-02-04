@@ -1,10 +1,11 @@
-package org.abigballofmud.azkaban.plugin.datax.util;
+package org.abigballofmud.azkaban.plugin.datax.utils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
 import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.plugin.datax.constants.CommonConstants;
 import org.abigballofmud.azkaban.plugin.datax.exception.DataxRuntimeException;
@@ -48,7 +49,9 @@ public class DataxJobUtil {
         return jsonFile;
     }
 
-    public static String replacePlaceHolderForJson(String jsonStr, Map<String, String> params) {
+    public static String replacePlaceHolderForJson(String jsonStr,
+                                                   Map<String, String> params,
+                                                   SpecifiedParamsResponse specifiedParamsResponse) {
         // 处理job传的参数
         if (!(params == null || params.isEmpty())) {
             for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -59,7 +62,7 @@ public class DataxJobUtil {
             }
         }
         // 处理内置参数
-        return ParamsUtil.handlePredefinedParams(jsonStr);
+        return ParamsUtil.handlePredefinedParams(jsonStr, specifiedParamsResponse);
     }
 
     public static File generateTempJsonFileForExecute(String jsonStr, String workingDir, String fileName) throws IOException {

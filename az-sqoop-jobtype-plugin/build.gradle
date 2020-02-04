@@ -24,7 +24,9 @@ distributions {
                 from jar
                 from {
                     configurations.runtime.findAll {
-                        return it.name.contains("az-custom-common")
+                        return it.name.contains("az-custom-common")\
+                                     || it.name.contains("spring")\
+                                     || it.name.contains("jackson")
                     }
                 }
             }

@@ -1,4 +1,4 @@
-package org.abigballofmud.azkaban.plugin.sqoop.constants;
+package org.abigballofmud.azkaban.common.constants;
 
 /**
  * <p>

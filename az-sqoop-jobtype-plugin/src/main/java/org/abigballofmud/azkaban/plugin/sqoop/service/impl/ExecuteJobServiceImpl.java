@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import azkaban.utils.Props;
+import org.abigballofmud.azkaban.common.constants.JobPropsKey;
+import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
+import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.plugin.sqoop.constants.CommonConstants;
 import org.abigballofmud.azkaban.plugin.sqoop.constants.SqoopJobPropKeys;
-import org.abigballofmud.azkaban.plugin.sqoop.exception.SqoopJobProcessException;
 import org.abigballofmud.azkaban.plugin.sqoop.service.ExecuteJobService;
-import org.abigballofmud.azkaban.plugin.sqoop.util.SqoopJobUtil;
+import org.abigballofmud.azkaban.plugin.sqoop.utils.SqoopJobUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -19,7 +21,7 @@ import org.apache.log4j.Logger;
  * description
  * </p>
  *
- * @author isacc 2020/02/03 15:04
+ * @author abigballofmud 2020/02/03 15:04
  * @since 1.0
  */
 public class ExecuteJobServiceImpl implements ExecuteJobService {
@@ -27,7 +29,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
     private Logger log;
 
     @Override
-    public List<String> generateSqoopCommand(Props sqoopJobProps, Logger logger) throws SqoopJobProcessException {
+    public List<String> generateSqoopCommand(Props sqoopJobProps, Logger logger) {
         this.log = logger;
         log.debug("sqoop job start run...");
         List<String> sqoopCommandFromProps = getSqoopCommandFromProps(sqoopJobProps);
@@ -36,7 +38,13 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         sqoopCommandFromProps.forEach(command -> {
             // 替换Json脚本参数
             Map<String, String> params = sqoopJobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
-            list.add(SqoopJobUtil.replacePlaceHolderForJson(command, params));
+            String jobName = sqoopJobProps.get(JobPropsKey.JOB_ID.getKey());
+            log.info("jobName: " + jobName);
+            SpecifiedParamsResponse specifiedParams = ParamsUtil.getSpecifiedParams("http://192.168.11.212:8510",
+                    Long.valueOf(jobName.split("_")[0]),
+                    jobName);
+            log.info("specifiedParams: " + specifiedParams);
+            list.add(SqoopJobUtil.replacePlaceHolderForJson(command, params, specifiedParams));
         });
         return list;
     }

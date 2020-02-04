@@ -7,12 +7,14 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import azkaban.utils.Props;
+import org.abigballofmud.azkaban.common.constants.JobPropsKey;
+import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
+import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.plugin.datax.constants.CommonConstants;
 import org.abigballofmud.azkaban.plugin.datax.constants.DataxJobPropKeys;
-import org.abigballofmud.azkaban.plugin.datax.constants.JobPropsKey;
 import org.abigballofmud.azkaban.plugin.datax.exception.DataxJobProcessException;
 import org.abigballofmud.azkaban.plugin.datax.service.ExecuteJobService;
-import org.abigballofmud.azkaban.plugin.datax.util.DataxJobUtil;
+import org.abigballofmud.azkaban.plugin.datax.utils.DataxJobUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -54,8 +56,16 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             File jsonFile = DataxJobUtil.loadJsonFile(realFilePath);
             // 替换Json脚本参数
             Map<String, String> params = dataxJobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
+            String jobName = dataxJobProps.get(JobPropsKey.JOB_ID.getKey());
+            log.info("jobName: " + jobName);
+            SpecifiedParamsResponse specifiedParams = ParamsUtil.getSpecifiedParams("http://192.168.11.212:8510",
+                    Long.valueOf(jobName.split("_")[0]),
+                    jobName);
+            log.info("specifiedParams: " + specifiedParams);
             String jsonStr = DataxJobUtil.replacePlaceHolderForJson(
-                    FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8.name()), params);
+                    FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8.name()),
+                    params,
+                    specifiedParams);
             // 待执行的Json脚本写入临时文件
             File execJsonFile = DataxJobUtil.generateTempJsonFileForExecute(
                     jsonStr, dataxJobProps.get(JobPropsKey.WORKING_DIR.getKey()), jsonFile.getName());

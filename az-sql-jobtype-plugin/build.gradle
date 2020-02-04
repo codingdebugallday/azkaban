@@ -25,11 +25,12 @@ distributions {
                 from {
                     configurations.runtime.findAll {
                         return it.name.contains("az-custom-common")\
-                                || it.name.contains("gson")\
-                                || it.name.contains("mysql")\
-                                || it.name.contains("ant")\
-                                || it.name.contains("postgresql")\
-                                || it.name.contains("spring")
+                                   || it.name.contains("gson")\
+                                   || it.name.contains("mysql")\
+                                   || it.name.contains("ant")\
+                                   || it.name.contains("postgresql")\
+                                   || it.name.contains("spring")\
+                                   || it.name.contains("jackson")
                     }
                 }
             }
@@ -48,7 +49,6 @@ dependencies {
     compile "org.apache.ant:ant:${antVersion}"
     compile "mysql:mysql-connector-java:${mysqlDriverVersion}"
     compile "org.postgresql:postgresql:${postgresqlDriverVersion}"
-    compile group: 'org.springframework', name: 'spring-web', version: '5.2.2.RELEASE'
     compile project(':az-core')
     compile project(":azkaban-common")
     compile project(":az-custom-common")

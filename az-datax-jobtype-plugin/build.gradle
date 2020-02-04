@@ -33,7 +33,9 @@ distributions {
                 from {
                     configurations.runtime.findAll {
                         return it.name.contains("az-custom-common")\
-                                 || it.name.contains("gson")
+                                    || it.name.contains("gson")\
+                                    || it.name.contains("spring")\
+                                    || it.name.contains("jackson")
                     }
                 }
             }
