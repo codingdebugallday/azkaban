@@ -1,10 +1,15 @@
 package org.abigballofmud.azkaban.common.utils;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.regex.Matcher;
 
 import com.google.gson.Gson;
@@ -32,6 +37,17 @@ public class ParamsUtil {
 
     private static RestTemplate restTemplate = RestTemplateUtil.getRestTemplate();
     private static Gson gson = new Gson();
+
+    public static String getHdspCoreUrl(Logger log, String hdspPropertiesPath) {
+        log.info("load hdsp.properties: " + hdspPropertiesPath);
+        Properties properties = new Properties();
+        try (InputStream in = new BufferedInputStream(new FileInputStream(hdspPropertiesPath))) {
+            properties.load(in);
+            return properties.getProperty("hdsp.core.url");
+        } catch (IOException e) {
+            throw new IllegalStateException("获取hdsp_core服务的url地址出错, " + e);
+        }
+    }
 
     /**
      * 项目客制化需求，内置参数值从表里取

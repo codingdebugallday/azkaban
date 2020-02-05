@@ -9,6 +9,7 @@ import azkaban.utils.Props;
 import com.google.gson.Gson;
 import org.abigballofmud.azkaban.common.constants.JobPropsKey;
 import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
+import org.abigballofmud.azkaban.common.utils.CommonUtil;
 import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.common.utils.RestTemplateUtil;
 import org.abigballofmud.azkaban.plugin.sql.constants.CommonConstants;
@@ -45,6 +46,8 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         List<String> sqlFilePaths = getSqlFilesFormProps(jobProps);
         // 循环执行配置SQL脚本
         String workDir = jobProps.getString(JobPropsKey.WORKING_DIR.getKey());
+        String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
+        String hdspCoreUrl = ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath);
         for (String sqlFilePath : sqlFilePaths) {
             String realFilePath;
             if (!SqlJobUtil.isAbsolutePath(sqlFilePath)) {
@@ -52,21 +55,23 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             } else {
                 realFilePath = sqlFilePath;
             }
-            executeSingleSqlFile(jobProps, realFilePath);
+            executeSingleSqlFile(hdspCoreUrl, jobProps, realFilePath);
         }
     }
 
-    private void executeSingleSqlFile(Props jobProps, String sqlFilePath) throws SqlJobProcessException {
+    private void executeSingleSqlFile(String hdspCoreUrl, Props jobProps, String sqlFilePath) throws SqlJobProcessException {
         // 加载配置的sql脚本文件
         File sqlFile = SqlJobUtil.loadSqlFile(sqlFilePath);
+        String jobName = jobProps.get(JobPropsKey.JOB_ID.getKey());
+        log.info("jobName: " + jobName);
         try {
             // 替换SQL脚本参数
             String sqlStr = FileUtils.readFileToString(sqlFile, StandardCharsets.UTF_8.name());
             Map<String, String> params = jobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
-            String jobName = jobProps.get(JobPropsKey.JOB_ID.getKey());
-            log.info("jobName: " + jobName);
-            SpecifiedParamsResponse specifiedParams = ParamsUtil.getSpecifiedParams("http://192.168.11.212:8510",
-                    Long.valueOf(jobName.split("_")[0]),
+            String workDir = jobProps.get(JobPropsKey.WORKING_DIR.getKey());
+            SpecifiedParamsResponse specifiedParams = ParamsUtil.getSpecifiedParams(
+                    hdspCoreUrl,
+                    Long.valueOf(jobName.split("\\.")[0]),
                     jobName);
             log.info("specifiedParams: " + specifiedParams);
             String realSql = SqlJobUtil.replacePlaceHolderForSql(sqlStr, params, specifiedParams);
@@ -80,7 +85,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
                 // 一般走jdbc的方式
                 // 待执行的SQL脚本写入临时文件
                 File execSqlFile = SqlJobUtil.generateTempSqlFileForExecute(realSql,
-                        jobProps.get(JobPropsKey.WORKING_DIR.getKey()), sqlFile.getName());
+                        workDir, sqlFile.getName());
                 DatabasePojo databasePojo = new DatabasePojo(jobProps);
                 log.info("[sql job]jdbc url: " + databasePojo.getUrl());
                 log.info("[sql job]user: " + databasePojo.getUsername());
@@ -92,6 +97,12 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             }
         } catch (IOException e) {
             throw new SqlJobProcessException("Sql file to string error", e);
+        } finally {
+            // 更新内置参数
+            ParamsUtil.updateSpecifiedParams(log,
+                    hdspCoreUrl,
+                    Long.valueOf(jobName.split("\\.")[0]),
+                    jobName);
         }
 
     }

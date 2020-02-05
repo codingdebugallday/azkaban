@@ -31,7 +31,7 @@ public class SqlJob extends AbstractJob {
     private ExecuteJobService executeJobService;
 
     /**
-     *注意：构造方法必须是public 否则azkaban.utils.callConstructor 反射出现问题
+     * 注意：构造方法必须是public 否则azkaban.utils.callConstructor 反射出现问题
      */
     public SqlJob(String jobid, Props sysProps, Props jobProps, Logger logger) {
         super(jobid, logger);
