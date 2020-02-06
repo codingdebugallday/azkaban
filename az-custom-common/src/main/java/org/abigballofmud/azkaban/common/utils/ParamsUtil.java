@@ -129,48 +129,50 @@ public class ParamsUtil {
         String[] splitArr = matcher.split(PredefinedParams.SPLIT_KEY);
         String originDataTime = Optional.ofNullable(specifiedParamsResponse.getCurrentDataTime()).orElse(splitArr[0]);
         int defaultSize = 2;
+        DateTimeFormatter defaultFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         if (splitArr.length > defaultSize) {
             //  _p_current_date_time:N:day
-            String currentDateTime = genLocalDateTime(originDataTime, Long.valueOf(splitArr[1]), splitArr[2]);
+            String currentDateTime = genLocalDateTime(originDataTime, defaultFormatter, Long.valueOf(splitArr[1]), splitArr[2]);
             str = str.replaceAll(String.format("\\$\\{%s\\:%s\\:%s\\}", PredefinedParams.CURRENT_DATE_TIME, splitArr[1], splitArr[2]),
                     currentDateTime);
         } else if (splitArr.length == defaultSize) {
             // _p_current_date_time:yyyy-MM-dd HH:mm:ss
-            String currentDateTime = LocalDateTime.parse(originDataTime).format(DateTimeFormatter.ofPattern(splitArr[1]));
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(splitArr[1]);
+            String currentDateTime = LocalDateTime.parse(originDataTime, formatter).format(formatter);
             str = str.replaceAll(String.format("\\$\\{%s\\:%s\\}", splitArr[0], splitArr[1]), currentDateTime);
         } else {
             // _p_current_date_time
-            String currentDateTime = LocalDateTime.parse(originDataTime).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            String currentDateTime = LocalDateTime.parse(originDataTime, defaultFormatter).format(defaultFormatter);
             str = str.replaceAll(String.format("\\$\\{%s\\}", PredefinedParams.CURRENT_DATE_TIME),
                     currentDateTime);
         }
         return str;
     }
 
-    private static String genLocalDateTime(String originDataTime, Long interval, String unit) {
-        LocalDateTime localDateTime = LocalDateTime.parse(originDataTime);
+    private static String genLocalDateTime(String originDataTime, DateTimeFormatter defaultFormatter, Long interval, String unit) {
+        LocalDateTime localDateTime = LocalDateTime.parse(originDataTime, defaultFormatter);
         String currentDateTime;
         switch (SimpleTimeUnitEnum.valueOf(unit.toUpperCase())) {
             case YEAR:
-                currentDateTime = localDateTime.minusYears(interval).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                currentDateTime = localDateTime.minusYears(interval).format(defaultFormatter);
                 break;
             case MONTH:
-                currentDateTime = localDateTime.minusMonths(interval).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                currentDateTime = localDateTime.minusMonths(interval).format(defaultFormatter);
                 break;
             case WEEK:
-                currentDateTime = localDateTime.minusWeeks(interval).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                currentDateTime = localDateTime.minusWeeks(interval).format(defaultFormatter);
                 break;
             case DAY:
-                currentDateTime = localDateTime.minusDays(interval).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                currentDateTime = localDateTime.minusDays(interval).format(defaultFormatter);
                 break;
             case HOUR:
-                currentDateTime = localDateTime.minusHours(interval).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                currentDateTime = localDateTime.minusHours(interval).format(defaultFormatter);
                 break;
             case MIN:
-                currentDateTime = localDateTime.minusMinutes(interval).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                currentDateTime = localDateTime.minusMinutes(interval).format(defaultFormatter);
                 break;
             case SEC:
-                currentDateTime = localDateTime.minusSeconds(interval).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                currentDateTime = localDateTime.minusSeconds(interval).format(defaultFormatter);
                 break;
             default:
                 throw new IllegalArgumentException(String.format("非法单位[%s]，单位[year，month，week，day，hour，min，sec]", unit));
