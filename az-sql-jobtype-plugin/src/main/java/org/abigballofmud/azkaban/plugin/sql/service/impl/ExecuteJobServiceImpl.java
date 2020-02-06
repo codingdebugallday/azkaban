@@ -71,7 +71,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             String workDir = jobProps.get(JobPropsKey.WORKING_DIR.getKey());
             SpecifiedParamsResponse specifiedParams = ParamsUtil.getSpecifiedParams(
                     hdspCoreUrl,
-                    Long.valueOf(jobName.split("\\.")[0]),
+                    0L,
                     jobName);
             log.info("specifiedParams: " + specifiedParams);
             String realSql = SqlJobUtil.replacePlaceHolderForSql(sqlStr, params, specifiedParams);
@@ -101,7 +101,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             // 更新内置参数
             ParamsUtil.updateSpecifiedParams(log,
                     hdspCoreUrl,
-                    Long.valueOf(jobName.split("\\.")[0]),
+                    0L,
                     jobName);
         }
 

@@ -63,7 +63,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             log.info("jobName: " + jobName);
             SpecifiedParamsResponse specifiedParams = ParamsUtil.getSpecifiedParams(
                     ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath),
-                    Long.valueOf(jobName.split("\\.")[0]),
+                    0L,
                     jobName);
             log.info("specifiedParams: " + specifiedParams);
             String jsonStr = DataxJobUtil.replacePlaceHolderForJson(

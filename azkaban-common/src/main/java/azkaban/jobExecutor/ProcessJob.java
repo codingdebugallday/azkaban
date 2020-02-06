@@ -325,7 +325,7 @@ public class ProcessJob extends AbstractProcessJob {
         String hdspCoreUrl = ParamsUtil.getHdspCoreUrl(this.getLog(), hdspPropertiesPath);
         ParamsUtil.updateSpecifiedParams(this.getLog(),
                 hdspCoreUrl,
-                Long.valueOf(jobName.split("\\.")[0]),
+                0L,
                 jobName);
       }
     }
