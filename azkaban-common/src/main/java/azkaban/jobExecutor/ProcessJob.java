@@ -321,9 +321,7 @@ public class ProcessJob extends AbstractProcessJob {
         // 更新内置参数表
         String jobName = jobProps.get(JobPropsKey.JOB_ID.getKey());
         String workDir = jobProps.getString(JobPropsKey.WORKING_DIR.getKey());
-        String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
-        String hdspCoreUrl = ParamsUtil.getHdspCoreUrl(this.getLog(), hdspPropertiesPath);
-        ParamsUtil.updateSpecifiedParams(this.getLog(), hdspCoreUrl, 0L, jobName, this.success);
+        ParamsUtil.updateSpecifiedParams(this.getLog(), workDir, 0L, jobName, this.success);
       }
     }
 

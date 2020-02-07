@@ -52,10 +52,12 @@ public class ParamsUtil {
     /**
      * 项目客制化需求，内置参数值从表里取
      */
-    public static SpecifiedParamsResponse getSpecifiedParams(Logger log, String url, Long tenantId, String jobName) {
+    public static SpecifiedParamsResponse getSpecifiedParams(Logger log, Long tenantId, String workDir, String jobName) {
+        String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
+        log.info("jobName: " + jobName);
         ResponseEntity<SpecifiedParamsResponse> responseEntity = restTemplate.getForEntity(
                 String.format("%s/v2/%d/timestamp-controls/get-increment-param?timestampType=%s",
-                        url,
+                        ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath),
                         tenantId,
                         jobName),
                 SpecifiedParamsResponse.class);
@@ -64,17 +66,20 @@ public class ParamsUtil {
             log.warn(String.format("请求查询内置参数值报错或无内置参数[可忽略]，%s", responseEntity.getBody()));
         }
         SpecifiedParamsContext.setSpecifiedParamsResponse(responseEntity.getBody());
+        log.info("SpecifiedParams: " + responseEntity.getBody());
         return responseEntity.getBody();
     }
 
     /**
      * 项目客制化需求，azkaban执行完毕后更新表里的内置参数值
      */
-    public static void updateSpecifiedParams(Logger log, String url, Long tenantId, String jobName, Boolean success) {
+    public static void updateSpecifiedParams(Logger log, String workDir, Long tenantId, String jobName, Boolean success) {
+        String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
+        String hdspCoreUrl = ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath);
         try {
             SpecifiedParamsResponse specifiedParams = SpecifiedParamsContext.current();
             // 判断是否需要去更新 无内置参数可不更新
-            if (specifiedParams.getFailed()) {
+            if (Objects.nonNull(specifiedParams.getFailed())) {
                 log.warn("内置参数查询错误或无内置参数值[可忽略]，无需更新");
                 return;
             }
@@ -87,7 +92,7 @@ public class ParamsUtil {
             body.put("success", Optional.ofNullable(success).orElse(false));
             HttpEntity<String> requestEntity = new HttpEntity<>(gson.toJson(body), RestTemplateUtil.httpHeaders());
             ResponseEntity<String> responseEntity = restTemplate.postForEntity(
-                    String.format("%s/v2/%d/timestamp-controls/update-increment", url, tenantId),
+                    String.format("%s/v2/%d/timestamp-controls/update-increment", hdspCoreUrl, tenantId),
                     requestEntity, String.class);
             if (Objects.requireNonNull(requestEntity.getBody()).contains(PredefinedParams.FAILED)) {
                 throw new IllegalStateException(String.format("azkaban执行完毕更新内置参数值报错，%s", responseEntity.getBody()));
@@ -96,18 +101,6 @@ public class ParamsUtil {
         } finally {
             SpecifiedParamsContext.clear();
         }
-    }
-
-    private static SpecifiedParamsResponse getSpecifiedParams(Logger log, String workDir, String jobName) {
-        String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
-        log.info("jobName: " + jobName);
-        SpecifiedParamsResponse specifiedParams = ParamsUtil.getSpecifiedParams(
-                log,
-                ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath),
-                0L,
-                jobName);
-        log.info("specifiedParams: " + specifiedParams);
-        return specifiedParams;
     }
 
     /**
@@ -121,9 +114,9 @@ public class ParamsUtil {
      */
     public static String handlePredefinedParams(Logger log, String str, String workDir, String jobName) {
         Matcher matcher = PredefinedParams.PREDEFINED_PARAM_REGEX.matcher(str);
+        SpecifiedParamsResponse specifiedParamsResponse = getSpecifiedParams(log, 0L, workDir, jobName);
         while (matcher.find()) {
             // _p_current_data_time
-            SpecifiedParamsResponse specifiedParamsResponse = getSpecifiedParams(log, workDir, jobName);
             if (matcher.group(1).trim().contains(PredefinedParams.CURRENT_DATE_TIME)) {
                 str = handleDateTime(str, matcher.group(1).trim(), specifiedParamsResponse);
             }
