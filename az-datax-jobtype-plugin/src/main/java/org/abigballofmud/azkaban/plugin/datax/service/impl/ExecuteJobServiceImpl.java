@@ -8,9 +8,6 @@ import java.util.regex.Pattern;
 
 import azkaban.utils.Props;
 import org.abigballofmud.azkaban.common.constants.JobPropsKey;
-import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
-import org.abigballofmud.azkaban.common.utils.CommonUtil;
-import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.plugin.datax.constants.CommonConstants;
 import org.abigballofmud.azkaban.plugin.datax.constants.DataxJobPropKeys;
 import org.abigballofmud.azkaban.plugin.datax.exception.DataxJobProcessException;
@@ -58,18 +55,10 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             // 替换Json脚本参数
             Map<String, String> params = dataxJobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
             String workDir = dataxJobProps.get(JobPropsKey.WORKING_DIR.getKey());
-            String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
             String jobName = dataxJobProps.get(JobPropsKey.JOB_ID.getKey());
-            log.info("jobName: " + jobName);
-            SpecifiedParamsResponse specifiedParams = ParamsUtil.getSpecifiedParams(
-                    ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath),
-                    0L,
-                    jobName);
-            log.info("specifiedParams: " + specifiedParams);
-            String jsonStr = DataxJobUtil.replacePlaceHolderForJson(
+            String jsonStr = DataxJobUtil.replacePlaceHolderForJson(log,
                     FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8.name()),
-                    params,
-                    specifiedParams);
+                    params, workDir, jobName);
             // 待执行的Json脚本写入临时文件
             File execJsonFile = DataxJobUtil.generateTempJsonFileForExecute(jsonStr, workDir, jsonFile.getName());
             return String.format("python %s/bin/datax.py %s",

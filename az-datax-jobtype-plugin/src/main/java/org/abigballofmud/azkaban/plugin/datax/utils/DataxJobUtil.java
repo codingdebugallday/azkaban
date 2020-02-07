@@ -5,12 +5,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
 import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.plugin.datax.constants.CommonConstants;
 import org.abigballofmud.azkaban.plugin.datax.exception.DataxRuntimeException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 /**
  * <p>
@@ -49,9 +49,11 @@ public class DataxJobUtil {
         return jsonFile;
     }
 
-    public static String replacePlaceHolderForJson(String jsonStr,
+    public static String replacePlaceHolderForJson(Logger log,
+                                                   String jsonStr,
                                                    Map<String, String> params,
-                                                   SpecifiedParamsResponse specifiedParamsResponse) {
+                                                   String workDir,
+                                                   String jobName) {
         // 处理job传的参数
         if (!(params == null || params.isEmpty())) {
             for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -62,7 +64,7 @@ public class DataxJobUtil {
             }
         }
         // 处理内置参数
-        return ParamsUtil.handlePredefinedParams(jsonStr, specifiedParamsResponse);
+        return ParamsUtil.handlePredefinedParams(log, jsonStr, workDir, jobName);
     }
 
     public static File generateTempJsonFileForExecute(String jsonStr, String workingDir, String fileName) throws IOException {

@@ -93,18 +93,4 @@ public class SpecifiedParamsResponse {
     public void setType(String type) {
         this.type = type;
     }
-
-    @Override
-    public String toString() {
-        return "SpecifiedParamsResponse{" +
-                "currentDataTime='" + currentDataTime + '\'' +
-                ", lastDateTime='" + lastDateTime + '\'' +
-                ", currentMaxId='" + currentMaxId + '\'' +
-                ", lastMaxId='" + lastMaxId + '\'' +
-                ", failed=" + failed +
-                ", code='" + code + '\'' +
-                ", message='" + message + '\'' +
-                ", type='" + type + '\'' +
-                '}';
-    }
 }

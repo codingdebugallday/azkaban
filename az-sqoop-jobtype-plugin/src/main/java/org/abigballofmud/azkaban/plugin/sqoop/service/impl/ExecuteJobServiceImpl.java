@@ -7,9 +7,6 @@ import java.util.Map;
 
 import azkaban.utils.Props;
 import org.abigballofmud.azkaban.common.constants.JobPropsKey;
-import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
-import org.abigballofmud.azkaban.common.utils.CommonUtil;
-import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.plugin.sqoop.constants.CommonConstants;
 import org.abigballofmud.azkaban.plugin.sqoop.constants.SqoopJobPropKeys;
 import org.abigballofmud.azkaban.plugin.sqoop.service.ExecuteJobService;
@@ -41,14 +38,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             Map<String, String> params = sqoopJobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
             String jobName = sqoopJobProps.get(JobPropsKey.JOB_ID.getKey());
             String workDir = sqoopJobProps.get(JobPropsKey.WORKING_DIR.getKey());
-            String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
-            log.info("jobName: " + jobName);
-            SpecifiedParamsResponse specifiedParams = ParamsUtil.getSpecifiedParams(
-                    ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath),
-                    0L,
-                    jobName);
-            log.info("specifiedParams: " + specifiedParams);
-            list.add(SqoopJobUtil.replacePlaceHolderForJson(command, params, specifiedParams));
+            list.add(SqoopJobUtil.replacePlaceHolderForJson(log, command, params, workDir, jobName));
         });
         return list;
     }

@@ -8,7 +8,6 @@ import java.util.*;
 import azkaban.utils.Props;
 import com.google.gson.Gson;
 import org.abigballofmud.azkaban.common.constants.JobPropsKey;
-import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
 import org.abigballofmud.azkaban.common.utils.CommonUtil;
 import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.common.utils.RestTemplateUtil;
@@ -38,6 +37,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
 
     private Logger log;
     private final Gson gson = new Gson();
+    private volatile boolean success;
 
     @Override
     public void executeJob(Props jobProps, Logger logger) throws SqlJobProcessException {
@@ -69,12 +69,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             String sqlStr = FileUtils.readFileToString(sqlFile, StandardCharsets.UTF_8.name());
             Map<String, String> params = jobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
             String workDir = jobProps.get(JobPropsKey.WORKING_DIR.getKey());
-            SpecifiedParamsResponse specifiedParams = ParamsUtil.getSpecifiedParams(
-                    hdspCoreUrl,
-                    0L,
-                    jobName);
-            log.info("specifiedParams: " + specifiedParams);
-            String realSql = SqlJobUtil.replacePlaceHolderForSql(sqlStr, params, specifiedParams);
+            String realSql = SqlJobUtil.replacePlaceHolderForSql(log, sqlStr, params, workDir, jobName);
             // 执行SQL脚本
             String executeType = Optional.ofNullable(jobProps.get(SqlJobPropKeys.SQL_EXECUTE_TYPE.getKey()))
                     .orElse(CommonConstants.HTTP);
@@ -92,17 +87,16 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
                 log.info("[sql job]sql: " + realSql);
                 String logPath = genExecuteSqlLogPath(jobProps.get(JobPropsKey.JOB_ATTACHMENT_FILE.getKey()));
                 SqlJobUtil.executeSql(execSqlFile, databasePojo, logPath);
+                this.success = true;
             } else {
                 throw new SqlJobProcessException("Sql execute type error, execute type must in [http, jdbc]");
             }
         } catch (IOException e) {
+            this.success = false;
             throw new SqlJobProcessException("Sql file to string error", e);
         } finally {
             // 更新内置参数
-            ParamsUtil.updateSpecifiedParams(log,
-                    hdspCoreUrl,
-                    0L,
-                    jobName);
+            ParamsUtil.updateSpecifiedParams(log, hdspCoreUrl, 0L, jobName, success);
         }
 
     }

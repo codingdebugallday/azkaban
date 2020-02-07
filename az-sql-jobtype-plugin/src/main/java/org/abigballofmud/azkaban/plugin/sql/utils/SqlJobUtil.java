@@ -6,13 +6,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
 import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.plugin.sql.constants.CommonConstants;
 import org.abigballofmud.azkaban.plugin.sql.exception.SqlJobProcessException;
 import org.abigballofmud.azkaban.plugin.sql.model.DatabasePojo;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.SQLExec;
 
@@ -78,15 +78,19 @@ public class SqlJobUtil {
     /**
      * 替换变量
      *
-     * @param sqlStr          sql字符串
-     * @param params          参数
-     * @param specifiedParams azkaban指定的内置参数值
+     * @param log     az log
+     * @param sqlStr  sql字符串
+     * @param params  参数
+     * @param workDir az执行目录
+     * @param jobName az job_id
      * @return java.lang.String
      * @author abigballofmud 2019/12/24 16:51
      */
-    public static String replacePlaceHolderForSql(String sqlStr,
+    public static String replacePlaceHolderForSql(Logger log,
+                                                  String sqlStr,
                                                   Map<String, String> params,
-                                                  SpecifiedParamsResponse specifiedParams) {
+                                                  String workDir,
+                                                  String jobName) {
         // 处理job传的参数
         if (!(params == null || params.isEmpty())) {
             for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -97,7 +101,7 @@ public class SqlJobUtil {
             }
         }
         // 处理内置参数
-        return ParamsUtil.handlePredefinedParams(sqlStr, specifiedParams);
+        return ParamsUtil.handlePredefinedParams(log, sqlStr, workDir, jobName);
     }
 
     /**

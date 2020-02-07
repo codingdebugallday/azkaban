@@ -316,17 +316,14 @@ public class ProcessJob extends AbstractProcessJob {
         throw new RuntimeException(e);
       } finally {
         info("Process with id " + this.process.getProcessId() + " completed "
-            + (this.success ? "successfully" : "unsuccessfully") + " in "
-            + ((System.currentTimeMillis() - startMs) / 1000) + " seconds.");
+                + (this.success ? "successfully" : "unsuccessfully") + " in "
+                + ((System.currentTimeMillis() - startMs) / 1000) + " seconds.");
         // 更新内置参数表
-        String jobName = this.getJobProps().get(JobPropsKey.JOB_ID.getKey());
+        String jobName = jobProps.get(JobPropsKey.JOB_ID.getKey());
         String workDir = jobProps.getString(JobPropsKey.WORKING_DIR.getKey());
         String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
         String hdspCoreUrl = ParamsUtil.getHdspCoreUrl(this.getLog(), hdspPropertiesPath);
-        ParamsUtil.updateSpecifiedParams(this.getLog(),
-                hdspCoreUrl,
-                0L,
-                jobName);
+        ParamsUtil.updateSpecifiedParams(this.getLog(), hdspCoreUrl, 0L, jobName, this.success);
       }
     }
 
