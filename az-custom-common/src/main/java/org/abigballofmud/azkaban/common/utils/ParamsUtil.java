@@ -88,7 +88,9 @@ public class ParamsUtil {
             body.put("tenantId", tenantId);
             body.put("timestampType", jobName);
             body.put("currentDateTime", specifiedParams.getCurrentDataTime());
+            body.put("lastDateTime", specifiedParams.getLastDateTime());
             body.put("currentMaxId", specifiedParams.getCurrentMaxId());
+            body.put("lastMaxId", specifiedParams.getLastMaxId());
             body.put("success", Optional.ofNullable(success).orElse(false));
             HttpEntity<String> requestEntity = new HttpEntity<>(gson.toJson(body), RestTemplateUtil.httpHeaders());
             ResponseEntity<String> responseEntity = restTemplate.postForEntity(

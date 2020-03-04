@@ -42,7 +42,9 @@ public class RestTemplateUtil {
 
     public static HttpHeaders httpHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        MediaType type = MediaType.parseMediaType("application/json; charset=UTF-8");
+        httpHeaders.setContentType(type);
+        httpHeaders.add("Accept", MediaType.APPLICATION_JSON.toString());
         return httpHeaders;
     }
 

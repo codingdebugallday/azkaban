@@ -75,7 +75,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
                     .orElse(CommonConstants.HTTP);
             if (CommonConstants.HTTP.equalsIgnoreCase(executeType)) {
                 // 默认执行方式为http 接口请求 平台客制化功能 不用在意
-                executeHttpTypeSql(jobProps, realSql);
+                executeHttpTypeSql(jobProps, realSql, workDir);
             } else if (CommonConstants.JDBC.equalsIgnoreCase(executeType)) {
                 // 一般走jdbc的方式
                 // 待执行的SQL脚本写入临时文件
@@ -107,9 +107,10 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
      *
      * @param jobProps azkaban job参数
      * @param sql      执行的sql
+     * @param workDir  工作目录
      * @author abigballofmud 2019/12/25 14:35
      */
-    private void executeHttpTypeSql(Props jobProps, String sql) throws SqlJobProcessException {
+    private void executeHttpTypeSql(Props jobProps, String sql, String workDir) throws SqlJobProcessException {
         // http://192.168.11.212:8510/v2/18/datasources/exec-sql
         // {
         //   "customize": true,
@@ -118,7 +119,12 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         //   "sql": "INSERT INTO userinfo_text(id,`username`, `password`, `age`, `sex`, `address`) VALUES ( 7,'abigballofmud11', '123456', 24, 1, 'chengdu')",
         //   "tenantId": 18
         // }
-        String url = Optional.ofNullable(jobProps.get(SqlJobPropKeys.SQL_HTTP_URL.getKey()))
+        String urlTmp = jobProps.get(SqlJobPropKeys.SQL_HTTP_URL.getKey());
+        if(StringUtils.isEmpty(urlTmp)){
+            String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
+            urlTmp = ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath);
+        }
+        String url = Optional.ofNullable(urlTmp)
                 .orElseThrow(() -> new SqlJobProcessException("Sql http url is null"));
         String body = Optional.ofNullable(jobProps.get(SqlJobPropKeys.SQL_HTTP_BODY.getKey()))
                 .orElseThrow(() -> new SqlJobProcessException("Sql http body is null"));
