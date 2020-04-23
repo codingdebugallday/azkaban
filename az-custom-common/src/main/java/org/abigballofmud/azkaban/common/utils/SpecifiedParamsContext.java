@@ -16,18 +16,18 @@ public class SpecifiedParamsContext {
         throw new IllegalStateException("context class!");
     }
 
-    private static final ThreadLocal<SpecifiedParamsResponse> CALLER_INFO_THREAD_LOCAL = new InheritableThreadLocal<>();
+    private static final ThreadLocal<SpecifiedParamsResponse> SPECIFIED_PARAMS_THREAD_LOCAL = new InheritableThreadLocal<>();
 
     public static SpecifiedParamsResponse current() {
-        return CALLER_INFO_THREAD_LOCAL.get();
+        return SPECIFIED_PARAMS_THREAD_LOCAL.get();
     }
 
     public static void setSpecifiedParamsResponse(SpecifiedParamsResponse specifiedParamsResponse) {
-        CALLER_INFO_THREAD_LOCAL.set(specifiedParamsResponse);
+        SPECIFIED_PARAMS_THREAD_LOCAL.set(specifiedParamsResponse);
     }
 
     public static void clear() {
-        CALLER_INFO_THREAD_LOCAL.remove();
+        SPECIFIED_PARAMS_THREAD_LOCAL.remove();
     }
 
 }

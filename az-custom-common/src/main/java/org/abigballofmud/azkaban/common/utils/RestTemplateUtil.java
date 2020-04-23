@@ -2,12 +2,9 @@ package org.abigballofmud.azkaban.common.utils;
 
 import java.util.Objects;
 
-import com.google.gson.Gson;
-import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -30,10 +27,10 @@ public class RestTemplateUtil {
         if (Objects.isNull(restTemplate)) {
             synchronized (RestTemplateUtil.class) {
                 if (Objects.isNull(restTemplate)) {
-                    SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+                    HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
                     factory.setReadTimeout(5000);
                     factory.setConnectTimeout(15000);
-                    return new RestTemplate(factory);
+                    restTemplate = new RestTemplate(factory);
                 }
             }
         }

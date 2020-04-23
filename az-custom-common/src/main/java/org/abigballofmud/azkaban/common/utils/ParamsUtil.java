@@ -35,8 +35,9 @@ public class ParamsUtil {
         throw new IllegalStateException("context class");
     }
 
-    private static RestTemplate restTemplate = RestTemplateUtil.getRestTemplate();
-    private static Gson gson = new Gson();
+    private static final RestTemplate RESTTEMPLATE = RestTemplateUtil.getRestTemplate();
+    private static final Gson GSON = new Gson();
+    private static final String PARAM_PATTERN = "\\$\\{%s\\}";
 
     public static String getHdspCoreUrl(Logger log, String hdspPropertiesPath) {
         log.info("load hdsp.properties: " + hdspPropertiesPath);
@@ -55,7 +56,7 @@ public class ParamsUtil {
     public static SpecifiedParamsResponse getSpecifiedParams(Logger log, Long tenantId, String workDir, String jobName) {
         String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
         log.info("jobName: " + jobName);
-        ResponseEntity<SpecifiedParamsResponse> responseEntity = restTemplate.getForEntity(
+        ResponseEntity<SpecifiedParamsResponse> responseEntity = RESTTEMPLATE.getForEntity(
                 String.format("%s/v2/%d/timestamp-controls/get-increment-param?timestampType=%s",
                         ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath),
                         tenantId,
@@ -92,8 +93,8 @@ public class ParamsUtil {
             body.put("currentMaxId", specifiedParams.getCurrentMaxId());
             body.put("lastMaxId", specifiedParams.getLastMaxId());
             body.put("success", Optional.ofNullable(success).orElse(false));
-            HttpEntity<String> requestEntity = new HttpEntity<>(gson.toJson(body), RestTemplateUtil.httpHeaders());
-            ResponseEntity<String> responseEntity = restTemplate.postForEntity(
+            HttpEntity<String> requestEntity = new HttpEntity<>(GSON.toJson(body), RestTemplateUtil.httpHeaders());
+            ResponseEntity<String> responseEntity = RESTTEMPLATE.postForEntity(
                     String.format("%s/v2/%d/timestamp-controls/update-increment", hdspCoreUrl, tenantId),
                     requestEntity, String.class);
             if (Objects.requireNonNull(requestEntity.getBody()).contains(PredefinedParams.FAILED)) {
@@ -124,17 +125,17 @@ public class ParamsUtil {
             }
             // _p_last_date_time
             if (matcher.group(1).trim().contains(PredefinedParams.LAST_DATE_TIME)) {
-                str = str.replaceAll(String.format("\\$\\{%s\\}", PredefinedParams.LAST_DATE_TIME),
+                str = str.replaceAll(String.format(PARAM_PATTERN, PredefinedParams.LAST_DATE_TIME),
                         specifiedParamsResponse.getLastDateTime());
             }
             // _p_last_date_time
             if (matcher.group(1).trim().contains(PredefinedParams.CURRENT_MAX_ID)) {
-                str = str.replaceAll(String.format("\\$\\{%s\\}", PredefinedParams.CURRENT_MAX_ID),
+                str = str.replaceAll(String.format(PARAM_PATTERN, PredefinedParams.CURRENT_MAX_ID),
                         specifiedParamsResponse.getCurrentMaxId());
             }
             // _p_last_max_id
             if (matcher.group(1).trim().contains(PredefinedParams.LAST_MAX_ID)) {
-                str = str.replaceAll(String.format("\\$\\{%s\\}", PredefinedParams.LAST_MAX_ID),
+                str = str.replaceAll(String.format(PARAM_PATTERN, PredefinedParams.LAST_MAX_ID),
                         specifiedParamsResponse.getLastMaxId());
             }
         }
@@ -161,7 +162,7 @@ public class ParamsUtil {
         } else {
             // _p_current_date_time
             currentDateTime = LocalDateTime.parse(originDataTime, defaultFormatter).format(defaultFormatter);
-            str = str.replaceAll(String.format("\\$\\{%s\\}", splitArr[0]), currentDateTime);
+            str = str.replaceAll(String.format(PARAM_PATTERN, splitArr[0]), currentDateTime);
         }
         // 时间戳的currentDateTime需更新
         Optional.ofNullable(SpecifiedParamsContext.current()).ifPresent(o ->
