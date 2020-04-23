@@ -1,0 +1,4 @@
+rest.url=http://172.23.16.64:8510
+sql.http.body={"customize":true,"datasourceId":105,"schema":"hdsp_test","tenantId":18}
+
+type=rest
