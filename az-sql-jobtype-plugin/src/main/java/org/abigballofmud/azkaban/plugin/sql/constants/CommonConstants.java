@@ -31,7 +31,7 @@ public interface CommonConstants {
     /**
      * 临时sql文件名称
      */
-    String TEMP_SQL_FILE_NAME_PREFIXX = "_temp_exec_sql";
+    String TEMP_SQL_FILE_NAME_PREFIX = "_temp_exec_sql";
     /**
      * 自定义参数前缀
      */

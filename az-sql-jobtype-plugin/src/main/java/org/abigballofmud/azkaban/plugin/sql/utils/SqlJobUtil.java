@@ -127,7 +127,7 @@ public class SqlJobUtil {
     private static String genTempSqlFileName(String workingDir, String fileName) {
         return String.format("%s/%s_%d_%s",
                 workingDir,
-                CommonConstants.TEMP_SQL_FILE_NAME_PREFIXX,
+                CommonConstants.TEMP_SQL_FILE_NAME_PREFIX,
                 System.currentTimeMillis(),
                 fileName);
     }

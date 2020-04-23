@@ -17,7 +17,10 @@
             |--commonprivate.properties
 ```
 
-- 重启executor，即可使用，`type=datax`
+- 重新加载插件，即可使用，`type=datax`
+```shell
+curl http://ip:EXEC_SERVER_PORT/executor?action=reloadJobTypePlugins
+```
 - 示例当前模块中`job_examples/quickstart_datax_example`压缩为zip包上传到azkaban project即可，
 - **注意**，这里示例中的datax json文件里面的writer，
 `hdfspluswriter`是自己开发的datax插件，

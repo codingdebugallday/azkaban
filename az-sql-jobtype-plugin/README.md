@@ -17,7 +17,10 @@
             |--commonprivate.properties
 ```
 
-- 重启executor，即可使用，`type=sql`
+- 重新加载插件，即可使用，`type=sql`
+```shell
+curl http://ip:EXEC_SERVER_PORT/executor?action=reloadJobTypePlugins
+```
 - 示例当前模块中`job_examples/quickstart_example`压缩为zip包上传到azkaban project即可，
 - 目前支持http以及jdbc方式，默认为http，http模式是我项目上的客制化需求，
 因为项目上有许多自定义的驱动，请求接口去实现数据库查询，所以平时使用只需指定sql.execute.type为jdbc即可，详情见example
