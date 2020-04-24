@@ -29,6 +29,12 @@ public class RestApiJob extends AbstractJob {
      */
     private Props jobProps;
 
+    private static final Injector INJECTOR;
+
+    static {
+        INJECTOR = Guice.createInjector(new RestApiBindModule());
+    }
+
     /**
      * 注意：构造方法必须是public 否则azkaban.utils.callConstructor 反射出现问题
      */
@@ -49,8 +55,7 @@ public class RestApiJob extends AbstractJob {
         // 执行job
         try {
             this.jobProps.put(JobPropsKey.JOB_ID.getKey(), this.getId());
-            Injector injector = Guice.createInjector(new RestApiBindModule());
-            ExecuteJobService executeJobService = injector.getInstance(ExecuteJobService.class);
+            ExecuteJobService executeJobService = INJECTOR.getInstance(ExecuteJobService.class);
             executeJobService.executeJob(this.jobProps, this.getLog());
         } catch (CustomerJobProcessException e) {
             handleError(e.getMessage(), e);

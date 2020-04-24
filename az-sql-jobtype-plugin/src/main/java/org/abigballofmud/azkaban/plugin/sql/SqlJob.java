@@ -3,9 +3,11 @@ package org.abigballofmud.azkaban.plugin.sql;
 import azkaban.jobExecutor.AbstractJob;
 import azkaban.utils.Props;
 import azkaban.utils.PropsUtils;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import org.abigballofmud.azkaban.plugin.sql.binder.SqlBindModule;
 import org.abigballofmud.azkaban.plugin.sql.exception.SqlJobProcessException;
 import org.abigballofmud.azkaban.plugin.sql.service.ExecuteJobService;
-import org.abigballofmud.azkaban.plugin.sql.service.impl.ExecuteJobServiceImpl;
 import org.apache.log4j.Logger;
 
 /**
@@ -25,10 +27,12 @@ public class SqlJob extends AbstractJob {
      * job配置参数
      */
     private Props jobProps;
-    /**
-     * 任务调度类
-     */
-    private ExecuteJobService executeJobService;
+
+    private static final Injector INJECTOR;
+
+    static {
+        INJECTOR = Guice.createInjector(new SqlBindModule());
+    }
 
     /**
      * 注意：构造方法必须是public 否则azkaban.utils.callConstructor 反射出现问题
@@ -37,7 +41,6 @@ public class SqlJob extends AbstractJob {
         super(jobid, logger);
         this.sysProps = sysProps;
         this.jobProps = jobProps;
-        this.executeJobService = new ExecuteJobServiceImpl();
     }
 
     @Override
@@ -50,6 +53,7 @@ public class SqlJob extends AbstractJob {
         }
         // 执行job
         try {
+            ExecuteJobService executeJobService = INJECTOR.getInstance(ExecuteJobService.class);
             executeJobService.executeJob(this.jobProps, this.getLog());
         } catch (SqlJobProcessException e) {
             handleError(e.getMessage(), e);
@@ -83,13 +87,5 @@ public class SqlJob extends AbstractJob {
 
     public void setJobProps(Props jobProps) {
         this.jobProps = jobProps;
-    }
-
-    public ExecuteJobService getExecuteJobService() {
-        return executeJobService;
-    }
-
-    public void setExecuteJobService(ExecuteJobService executeJobService) {
-        this.executeJobService = executeJobService;
     }
 }

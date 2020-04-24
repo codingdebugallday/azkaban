@@ -1,10 +1,12 @@
 package org.abigballofmud.azkaban.common.utils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -31,6 +33,9 @@ public class RestTemplateUtil {
                     factory.setReadTimeout(5000);
                     factory.setConnectTimeout(15000);
                     restTemplate = new RestTemplate(factory);
+                    // 这里string序列化使用utf8编码
+                    restTemplate.getMessageConverters()
+                            .set(1, new StringHttpMessageConverter(StandardCharsets.UTF_8));
                 }
             }
         }

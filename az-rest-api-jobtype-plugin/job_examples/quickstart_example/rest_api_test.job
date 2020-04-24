@@ -1,4 +1,6 @@
-rest.url=http://172.23.16.64:8510
-sql.http.body={"customize":true,"datasourceId":105,"schema":"hdsp_test","tenantId":18}
+rest.expression=http://172.23.16.65:8080/xstr/v1/0/clusters
+rest.method=GET
+rest.contentType=application/json
+rest.query=access_token=ff9bad02-33f4-42fd-a632-9a19212b5d9a
 
 type=rest

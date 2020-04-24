@@ -24,6 +24,11 @@ public class CustomerRuntimeException extends RuntimeException {
         this.code = HttpStatus.SC_INTERNAL_SERVER_ERROR;
     }
 
+    public CustomerRuntimeException(String msg, Throwable throwable) {
+        super(msg, throwable);
+        this.code = HttpStatus.SC_INTERNAL_SERVER_ERROR;
+    }
+
     public CustomerRuntimeException(Throwable throwable) {
         super(throwable);
         this.code = HttpStatus.SC_INTERNAL_SERVER_ERROR;

@@ -124,17 +124,20 @@ public class ParamsUtil {
                 str = handleDateTime(str, matcher.group(1).trim(), specifiedParamsResponse);
             }
             // _p_last_date_time
-            if (matcher.group(1).trim().contains(PredefinedParams.LAST_DATE_TIME)) {
+            if (Objects.nonNull(specifiedParamsResponse.getLastDateTime()) &&
+                    matcher.group(1).trim().contains(PredefinedParams.LAST_DATE_TIME)) {
                 str = str.replaceAll(String.format(PARAM_PATTERN, PredefinedParams.LAST_DATE_TIME),
                         specifiedParamsResponse.getLastDateTime());
             }
             // _p_last_date_time
-            if (matcher.group(1).trim().contains(PredefinedParams.CURRENT_MAX_ID)) {
+            if (Objects.nonNull(specifiedParamsResponse.getCurrentMaxId()) &&
+                    matcher.group(1).trim().contains(PredefinedParams.CURRENT_MAX_ID)) {
                 str = str.replaceAll(String.format(PARAM_PATTERN, PredefinedParams.CURRENT_MAX_ID),
                         specifiedParamsResponse.getCurrentMaxId());
             }
             // _p_last_max_id
-            if (matcher.group(1).trim().contains(PredefinedParams.LAST_MAX_ID)) {
+            if (Objects.nonNull(specifiedParamsResponse.getLastMaxId()) &&
+                    matcher.group(1).trim().contains(PredefinedParams.LAST_MAX_ID)) {
                 str = str.replaceAll(String.format(PARAM_PATTERN, PredefinedParams.LAST_MAX_ID),
                         specifiedParamsResponse.getLastMaxId());
             }

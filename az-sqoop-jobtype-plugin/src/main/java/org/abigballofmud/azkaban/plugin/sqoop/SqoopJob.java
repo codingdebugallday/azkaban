@@ -5,6 +5,9 @@ import java.util.List;
 
 import azkaban.jobExecutor.ProcessJob;
 import azkaban.utils.Props;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import org.abigballofmud.azkaban.plugin.sqoop.binder.SqoopBindModule;
 import org.abigballofmud.azkaban.plugin.sqoop.exception.SqoopJobProcessException;
 import org.abigballofmud.azkaban.plugin.sqoop.service.ExecuteJobService;
 import org.abigballofmud.azkaban.plugin.sqoop.service.impl.ExecuteJobServiceImpl;
@@ -23,15 +26,18 @@ public class SqoopJob extends ProcessJob {
     /**
      * job配置参数
      */
-    private Props sqoopJobProps;
+    private final Props sqoopJobProps;
 
-    private ExecuteJobService executeJobService;
+    private static final Injector INJECTOR;
+
+    static {
+        INJECTOR = Guice.createInjector(new SqoopBindModule());
+    }
 
     public SqoopJob(String jobId, Props sysProps, Props jobProps, Logger log) {
         super(jobId, sysProps, jobProps, log);
         this.sysProps = sysProps;
         this.sqoopJobProps = jobProps;
-        this.executeJobService = new ExecuteJobServiceImpl();
     }
 
     /**
@@ -44,6 +50,7 @@ public class SqoopJob extends ProcessJob {
     protected List<String> getCommandList() {
         Logger log = this.getLog();
         try {
+            ExecuteJobService executeJobService = INJECTOR.getInstance(ExecuteJobService.class);
             return executeJobService.generateSqoopCommand(this.sqoopJobProps, log);
         } catch (SqoopJobProcessException e) {
             log.error("sqoop job command generate fail", e);

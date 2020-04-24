@@ -205,9 +205,9 @@ subprojects {
 
   /**
    * Terminate compilation if warnings occur.*/
-  tasks.withType(JavaCompile) {
-    options.compilerArgs += ["-Werror"]
-  }
+//  tasks.withType(JavaCompile) {
+//    options.compilerArgs += ["-Werror"]
+//  }
 
 
   /**
