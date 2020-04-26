@@ -1,9 +1,6 @@
 package org.abigballpfmud.azkaban.plugin.rest.service.impl;
 
-import java.util.Collections;
-
 import azkaban.utils.Props;
-import org.abigballofmud.azkaban.common.exception.CustomerJobProcessException;
 import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
 import org.abigballofmud.azkaban.common.utils.RestTemplateUtil;
 import org.abigballpfmud.azkaban.plugin.rest.constants.Auth;
@@ -15,8 +12,6 @@ import org.abigballpfmud.azkaban.plugin.rest.model.HttpResp;
 import org.abigballpfmud.azkaban.plugin.rest.model.Payload;
 import org.abigballpfmud.azkaban.plugin.rest.service.ExecuteJobService;
 import org.apache.log4j.Logger;
-import org.checkerframework.checker.units.qual.K;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestClientResponseException;
@@ -36,7 +31,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
     private Exec exec;
 
     @Override
-    public void executeJob(Props jobProps, Logger logger) throws CustomerJobProcessException {
+    public void executeJob(Props jobProps, Logger logger) {
         logger.info("start rest api job");
         check(jobProps);
         // 创建RestTemplate
@@ -53,19 +48,16 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
     }
 
     private Payload genPayload(Props jobProps) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.put("Content-Type", Collections.singletonList(
-                jobProps.getString(Key.CONTENT_TYPE, "application/json")));
-        // todo method
         return Payload.of()
                 // 表达式、请求方式
                 .putArgs(Key.METHOD, jobProps.getString(Key.METHOD, RequestMethod.GET.name()))
-                .putArgs(Key.EXPRESSION, jobProps.getString(Key.EXPRESSION))
+                .putArgs(Key.EXPRESSION, jobProps.get(Key.EXPRESSION))
                 // 放入当前请求对象
                 // .putArgs("request", jobProps.getString(Key.REQUEST))
                 // 请求参数
-                .putArgs(Key.HEADER, headers)
-                .putArgs(Key.QUERY, jobProps.getString(Key.QUERY));
+                .putArgs(Key.HEADER, jobProps.getString(Key.HEADER, null))
+                .putArgs(Key.QUERY, jobProps.getString(Key.QUERY, null))
+                .putArgs(Key.BODY, jobProps.getString(Key.BODY, null));
     }
 
     private Data<?> get(Payload payload) {

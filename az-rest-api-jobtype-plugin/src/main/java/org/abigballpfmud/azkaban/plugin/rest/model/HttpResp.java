@@ -67,10 +67,10 @@ public class HttpResp implements Serializable {
     @Override
     public String toString() {
         return "HttpResp{" +
-                "headers=" + headers +
-                ", body='" + body + '\'' +
-                ", statusCode='" + statusCode + '\'' +
+                "statusCode='" + statusCode + '\'' +
                 ", statusCodeValue=" + statusCodeValue +
+                ", body='" + body + '\'' +
+                ", headers=" + headers +
                 '}';
     }
 }

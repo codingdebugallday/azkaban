@@ -1,0 +1,6 @@
+rest.expression=http://172.23.16.65:8080/xstr/v1/0/spark-sync-headers
+rest.method=POST
+rest.header={"Authorization":"bearer c228c7de-fead-43d9-b611-df50190fcb15"}
+rest.body={"connectorId":-1,"connectorName":"-1","datasourceName":"-1","enabledFlag":0,"kafkaBootstrapServers":"-1","kafkaTopic":"-1","kafkaTopicSource":"CANAL","tenantId":0}
+
+type=rest
