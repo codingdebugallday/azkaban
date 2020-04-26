@@ -82,7 +82,7 @@ public class HttpExec implements Exec {
     }
 
     private String uri(Payload payload) {
-        String uri = payload.getOrThrow(Key.EXPRESSION);
+        String uri = payload.getOrThrow(Key.URI);
         if (UrlUtil.isValid(uri)) {
             return uri;
         }

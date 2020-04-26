@@ -1,4 +1,4 @@
-rest.expression=http://172.23.16.65:8080/xstr/v1/0/clusters
+rest.uri=http://172.23.16.65:8080/xstr/v1/0/clusters
 rest.method=GET
 rest.query=access_token=c228c7de-fead-43d9-b611-df50190fcb15
 

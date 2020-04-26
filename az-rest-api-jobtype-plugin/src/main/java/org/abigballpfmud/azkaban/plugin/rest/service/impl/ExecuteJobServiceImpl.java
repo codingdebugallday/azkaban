@@ -51,7 +51,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         return Payload.of()
                 // 表达式、请求方式
                 .putArgs(Key.METHOD, jobProps.getString(Key.METHOD, RequestMethod.GET.name()))
-                .putArgs(Key.EXPRESSION, jobProps.get(Key.EXPRESSION))
+                .putArgs(Key.URI, jobProps.get(Key.URI))
                 // 放入当前请求对象
                 // .putArgs("request", jobProps.getString(Key.REQUEST))
                 // 请求参数

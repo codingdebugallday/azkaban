@@ -25,7 +25,7 @@ public class Key {
     public static final String USERNAME = PREFIX + "username";
     public static final String PASSWORD = PREFIX + "password";
     public static final String REQUEST = PREFIX + "request";
-    public static final String EXPRESSION = PREFIX + "expression";
+    public static final String URI = PREFIX + "URI";
     public static final String CONTENT_TYPE = PREFIX + "contentType";
 
     public static final String HEADER = PREFIX + "header";
