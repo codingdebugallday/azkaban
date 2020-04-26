@@ -74,7 +74,7 @@ public class HttpExec implements Exec {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
-                headers.set(key, value);
+                headers.put(key, Collections.singletonList(value));
                 log.info(String.format("add to http header, %s -> %s", key, value));
             }
         }
