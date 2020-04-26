@@ -5,6 +5,7 @@ import azkaban.utils.Props;
 import azkaban.utils.PropsUtils;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import org.abigballofmud.azkaban.common.constants.JobPropsKey;
 import org.abigballofmud.azkaban.plugin.sql.binder.SqlBindModule;
 import org.abigballofmud.azkaban.plugin.sql.exception.SqlJobProcessException;
 import org.abigballofmud.azkaban.plugin.sql.service.ExecuteJobService;
@@ -53,6 +54,7 @@ public class SqlJob extends AbstractJob {
         }
         // 执行job
         try {
+            this.jobProps.put(JobPropsKey.JOB_ID.getKey(), this.getId());
             ExecuteJobService executeJobService = INJECTOR.getInstance(ExecuteJobService.class);
             executeJobService.executeJob(this.jobProps, this.getLog());
         } catch (SqlJobProcessException e) {
