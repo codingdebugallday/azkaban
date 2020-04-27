@@ -1,6 +1,7 @@
 package org.abigballpfmud.azkaban.plugin.rest.service.impl;
 
 import azkaban.utils.Props;
+import org.abigballofmud.azkaban.common.exception.CustomerJobProcessException;
 import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
 import org.abigballofmud.azkaban.common.utils.RestTemplateUtil;
 import org.abigballpfmud.azkaban.plugin.rest.constants.Auth;
@@ -31,7 +32,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
     private Exec exec;
 
     @Override
-    public void executeJob(Props jobProps, Logger logger) {
+    public void executeJob(Props jobProps, Logger logger) throws CustomerJobProcessException {
         logger.info("start rest api job");
         check(jobProps);
         // 创建RestTemplate
@@ -60,15 +61,19 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
                 .putArgs(Key.BODY, jobProps.getString(Key.BODY, null));
     }
 
-    private Data<?> get(Payload payload) {
+    private Data<?> get(Payload payload) throws CustomerJobProcessException {
         try {
             ResponseEntity<String> respEntity = exec.doExec(payload);
             HttpResp resp = new HttpResp(respEntity.getHeaders(),
                     respEntity.getBody(),
                     respEntity.getStatusCode().getReasonPhrase(),
                     respEntity.getStatusCodeValue());
+            if (!respEntity.getStatusCode().is2xxSuccessful()) {
+                throw new CustomerJobProcessException(
+                        String.format("request failed, response: %s", resp));
+            }
             return new Data<>(resp);
-        } catch (IllegalArgumentException | CustomerRuntimeException e) {
+        } catch (IllegalArgumentException | CustomerRuntimeException | CustomerJobProcessException e) {
             throw e;
         } catch (RestClientResponseException e) {
             HttpResp resp = new HttpResp(e.getResponseHeaders(),
