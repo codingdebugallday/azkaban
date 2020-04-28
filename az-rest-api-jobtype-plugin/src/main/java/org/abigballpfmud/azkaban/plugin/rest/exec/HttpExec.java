@@ -2,13 +2,20 @@ package org.abigballpfmud.azkaban.plugin.rest.exec;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import com.google.gson.Gson;
+import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
 import org.abigballpfmud.azkaban.plugin.rest.constants.Key;
+import org.abigballpfmud.azkaban.plugin.rest.constants.Status;
 import org.abigballpfmud.azkaban.plugin.rest.model.Payload;
+import org.abigballpfmud.azkaban.plugin.rest.utils.RetryUtil;
 import org.abigballpfmud.azkaban.plugin.rest.utils.UrlUtil;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
 import org.springframework.http.*;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -31,14 +38,12 @@ public class HttpExec implements Exec {
     }
 
     @Override
-    @SuppressWarnings("all")
-    public ResponseEntity<String> doExec(Payload payload) {
+    public MutablePair<ResponseEntity<String>, ResponseEntity<String>> doExec(Payload payload) {
         String uri = uri(payload);
         HttpMethod method = HttpMethod.resolve(payload.getOrThrow(Key.METHOD));
         log.info(String.format("uri: %s, method: %s", uri, method));
-
         // 拼接url
-        String query = payload.getNullableOrThrow(Key.QUERY);
+        String query = payload.getNullable(Key.QUERY);
         String url;
         if (Key.EMPTY_STRING.equals(query)) {
             url = uri;
@@ -46,30 +51,95 @@ public class HttpExec implements Exec {
             url = UrlUtil.concatUrl(uri, query);
         }
         log.info(String.format("query: %s, url: %s", query, url));
-
         // 加入默认的请求头
         HttpHeaders headers = putHeader(payload);
-
         // 执行
         HttpEntity<String> entity;
-        switch (method) {
-            case GET:
-                entity = new HttpEntity<>(null, headers);
-                return restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-            default:
-                String body = payload.getNullableOrThrow(Key.BODY);
-                entity = new HttpEntity<>(body, headers);
-                return restTemplate.exchange(url, method, entity, String.class);
+        if (Objects.requireNonNull(method) == HttpMethod.GET) {
+            entity = new HttpEntity<>(null, headers);
+        } else {
+            String body = payload.getNullable(Key.BODY);
+            entity = new HttpEntity<>(body, headers);
         }
+        return handle(payload, url, method, entity);
+    }
+
+    private MutablePair<ResponseEntity<String>, ResponseEntity<String>> handle(
+            Payload payload, String url, HttpMethod method, HttpEntity<String> entity) {
+        // 是否启用重试
+        boolean retryEnabled = Boolean.parseBoolean(payload.getOrThrow(Key.ENABLED_RETRY));
+        boolean callbackEnabled = Boolean.parseBoolean(payload.getOrThrow(Key.ENABLED_CALLBACK));
+        ResponseEntity<String> responseEntity = null;
+        ResponseEntity<String> callbackResponseEntity = null;
+        if (retryEnabled) {
+            // api 重试
+            try {
+                responseEntity = doRetry(payload, url, method, entity);
+            } catch (Exception e) {
+                log.error("api error,", e);
+            }
+        } else {
+            responseEntity = restTemplate.exchange(url, method, entity, String.class);
+        }
+        if (callbackEnabled) {
+            // 异步回调
+            try {
+                callbackResponseEntity = doCallback(payload,
+                        payload.getOrThrow(Key.CALLBACK_URI),
+                        new HttpEntity<>(null, applicationJsonHeader()));
+            } catch (Exception e) {
+                log.error("callback error,", e);
+            }
+        }
+        return MutablePair.of(responseEntity, callbackResponseEntity);
+    }
+
+    private ResponseEntity<String> doCallback(Payload payload,
+                                              String url,
+                                              HttpEntity<String> entity) {
+        return RetryUtil.executeWithRetry(() -> {
+                    ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+                    if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
+                        if (!responseEntity.getBody().contains(Status.SUCCESS.name())) {
+                            log.error("callback one, response: " + responseEntity);
+                            throw new CustomerRuntimeException("callback one, response: " + responseEntity);
+                        } else {
+                            log.info("callback success, response: " + responseEntity);
+                        }
+                    }
+                    return responseEntity;
+                },
+                Integer.parseInt(payload.getOrThrow(Key.CALLBACK_NUMBER)),
+                Integer.parseInt(payload.getNullable(Key.CALLBACK_INTERVAL)) * 1000L,
+                Boolean.parseBoolean(payload.getOrThrow(Key.ENABLED_CALLBACK_EXPONENTIAL)));
+    }
+
+    private ResponseEntity<String> doRetry(Payload payload,
+                                           String url,
+                                           HttpMethod method,
+                                           HttpEntity<String> entity) {
+        return RetryUtil.executeWithRetry(() ->
+                        restTemplate.exchange(url, method, entity, String.class),
+                Integer.parseInt(payload.getOrThrow(Key.RETRY_NUMBER)),
+                Integer.parseInt(payload.getNullable(Key.RETRY_INTERVAL)) * 1000L,
+                Boolean.parseBoolean(payload.getOrThrow(Key.ENABLED_RETRY_EXPONENTIAL)));
+    }
+
+    private HttpHeaders applicationJsonHeader() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
     }
 
     @SuppressWarnings("unchecked")
     private HttpHeaders putHeader(Payload payload) {
         HttpHeaders headers = new HttpHeaders();
-        headers.put("Content-Type", Collections.singletonList("application/json"));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        String inputHeaderStr = payload.getNullableOrThrow(Key.HEADER);
-        if (!Key.EMPTY_STRING.equals(inputHeaderStr)) {
+        String contentType = Optional.ofNullable(payload.get(Key.CONTENT_TYPE))
+                .orElse(MediaType.APPLICATION_JSON_VALUE);
+        headers.setContentType(new MediaType(contentType.substring(0, contentType.indexOf('/')),
+                contentType.substring(contentType.indexOf('/') + 1)));
+        String inputHeaderStr = payload.getNullable(Key.HEADER);
+        if (!StringUtils.isEmpty(inputHeaderStr)) {
             Map<String, String> map = GSON.fromJson(inputHeaderStr, Map.class);
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 String key = entry.getKey();

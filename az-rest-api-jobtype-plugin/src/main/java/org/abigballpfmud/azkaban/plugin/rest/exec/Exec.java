@@ -1,6 +1,7 @@
 package org.abigballpfmud.azkaban.plugin.rest.exec;
 
 import org.abigballpfmud.azkaban.plugin.rest.model.Payload;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -17,8 +18,8 @@ public interface Exec {
      * 执行
      *
      * @param payload Payload
-     * @return ResponseEntity<String>
+     * @return MutablePair
      */
-    ResponseEntity<String> doExec(Payload payload);
+    MutablePair<ResponseEntity<String>, ResponseEntity<String>> doExec(Payload payload);
 
 }

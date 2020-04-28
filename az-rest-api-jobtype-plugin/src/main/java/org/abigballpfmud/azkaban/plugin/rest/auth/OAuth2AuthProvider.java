@@ -15,6 +15,8 @@ import org.abigballpfmud.azkaban.plugin.rest.utils.Retry;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -103,7 +105,7 @@ class OAuth2ClientCredentialsAuthProvider implements AuthProvider {
 
     @Override
     public void provide(RestTemplate restTemplate, Props props, Logger log) {
-        this.log=log;
+        this.log = log;
         log.info("OAuth2 auth, grant_type: client_credentials");
         this.tokenUri = Conf.require(props, Key.TOKEN_URI);
         this.clientId = Conf.require(props, Key.CLIENT_ID);
@@ -243,9 +245,14 @@ class OAuth2PasswordAuthProvider implements AuthProvider {
 
     private AccessToken login() {
         return Retry.of().doRetry(() -> {
-            String uri = String.format(TOKEN_URI_FMT, tokenUri, clientId, clientSecret, username, password);
-            log.info(String.format("Token uri: %s", uri));
-            AccessToken accessToken = tokenRestTemplate.postForObject(uri, null, AccessToken.class);
+            MultiValueMap<String, Object> params = new LinkedMultiValueMap<>(2);
+            params.add("grant_type", "password");
+            params.add("client_id", clientId);
+            params.add("client_secret", clientSecret);
+            params.add("username", username);
+            params.add("password", password);
+            log.info(String.format("Token uri: %s", tokenUri));
+            AccessToken accessToken = tokenRestTemplate.postForObject(tokenUri, params, AccessToken.class);
             if (accessToken == null) {
                 throw new CustomerRuntimeException("Fetch access_token failed, no content");
             }

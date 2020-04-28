@@ -1,0 +1,31 @@
+rest.uri=http://172.23.16.65:8080/xstr/v1/0/sql-jobs/test
+rest.method=POST
+rest.contentType=application/json
+rest.body={"jobCode":"testJobCode01","clusterCode":"testClusterCode","sqlUploadPath":"sqlUploadPath","content":"content"}
+
+# 接口授权信息
+rest.auth=OAUTH2
+rest.grantType=PASSWORD
+rest.clientId=client
+rest.clientSecret=secret
+rest.tokenUri=http://172.23.16.65:8080/oauth/oauth/token
+rest.username=admin
+rest.password=GTwNoMxLrfSK1Rfq4JySZn9cPIJfQlQVCCmOfVCI+xpGUwUYgyQ+xgRCJO/vhly1rNs/toCwmezzazfj4uv9bw==
+
+# 接口是内部系统接口还是外部，默认外部
+rest.external=true
+# 主业务逻辑接口启用失败重试，默认关闭
+rest.retry.enabled=true
+# 默认重试3次
+rest.retry.number=3
+# 异步回调启用 查询接口执行状态，默认关闭
+rest.callback.enabled=true
+rest.callback.uri=http://172.23.16.65:8080/xstr/v1/0/sql-jobs/test/testJobCode01
+# 单位秒，默认5秒
+rest.callback.interval=10
+# 最多异步状态接口查询3次，默认3次
+rest.callback.number=3
+# 状态接口查询3次后，若还是running或failed，则结束任务，默认是success即true
+rest.callback.finishSuccess=true
+
+type=rest

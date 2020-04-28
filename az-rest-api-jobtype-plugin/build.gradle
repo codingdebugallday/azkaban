@@ -24,7 +24,8 @@ distributions {
                 from jar
                 from {
                     configurations.runtime.findAll {
-                        return it.name.contains("az-custom-common")
+                        return it.name.contains("az-custom-common")\
+                         || it.name.contains("commons-lang3")
                     }
                 }
             }
@@ -37,6 +38,7 @@ ext {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
     compile project(":azkaban-common")
     compile project(":az-custom-common")
 }

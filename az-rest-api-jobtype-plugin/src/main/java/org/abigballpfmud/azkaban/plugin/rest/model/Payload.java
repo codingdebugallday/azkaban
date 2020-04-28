@@ -31,7 +31,7 @@ public class Payload extends HashMap<String, String> {
         return value;
     }
 
-    public String getNullableOrThrow(String key) {
+    public String getNullable(String key) {
         return get(key);
     }
 
