@@ -46,7 +46,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         List<String> sqlFilePaths = getSqlFilesFormProps(jobProps);
         // 循环执行配置SQL脚本
         String workDir = jobProps.getString(JobPropsKey.WORKING_DIR.getKey());
-        String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
+        String hdspPropertiesPath = CommonUtil.getHdspPropertiesPath(workDir);
         String hdspCoreUrl = ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath);
         for (String sqlFilePath : sqlFilePaths) {
             String realFilePath;
@@ -121,7 +121,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         // }
         String urlTmp = jobProps.get(SqlJobPropKeys.SQL_HTTP_URL.getKey());
         if(StringUtils.isEmpty(urlTmp)){
-            String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
+            String hdspPropertiesPath = CommonUtil.getHdspPropertiesPath(workDir);
             urlTmp = ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath);
         }
         String url = Optional.ofNullable(urlTmp)

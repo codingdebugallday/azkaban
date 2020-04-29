@@ -21,7 +21,7 @@ public class Key {
      * api重试，默认不启用
      * 默认重试3次，重试间隔1秒，默认指数递增
      */
-    public static final String EXTERNAL = PREFIX + ".external";
+    public static final String EXTERNAL = PREFIX + "external";
     public static final String ENABLED_RETRY = PREFIX + "retry.enabled";
     public static final String RETRY_NUMBER = PREFIX + "retry.number";
     public static final String RETRY_INTERVAL = PREFIX + "retry.interval";
@@ -35,11 +35,15 @@ public class Key {
      */
     public static final String ENABLED_CALLBACK = PREFIX + "callback.enabled";
     public static final String CALLBACK_URI = PREFIX + "callback.uri";
+    public static final String CALLBACK_USE_GATEWAY = PREFIX + "callback.useGateway";
+    public static final String CALLBACK_APP = PREFIX + "callback.app";
     public static final String CALLBACK_INTERVAL = PREFIX + "callback.interval";
     public static final String CALLBACK_NUMBER = PREFIX + "callback.number";
     public static final String ENABLED_CALLBACK_EXPONENTIAL = PREFIX +"callback.exponential";
     public static final String CALLBACK_FINISH_SUCCESS = PREFIX +"callback.finishSuccess";
 
+    public static final String USE_GATEWAY = PREFIX + "useGateway";
+    public static final String APP = PREFIX + "app";
     public static final String METHOD = PREFIX + "method";
     public static final String AUTH = PREFIX + "auth";
     public static final String GRANT_TYPE = PREFIX + "grantType";

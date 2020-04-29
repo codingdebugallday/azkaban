@@ -10,8 +10,11 @@ import java.util.regex.Pattern;
  * @author isacc 2020/02/05 14:09
  * @since 1.0
  */
-public interface CommonConstants {
+public class CommonConstants {
 
-    Pattern AZKABAN_HOME_REGEX = Pattern.compile("(.*?)/executions");
+    private CommonConstants() {
+    }
+
+    public static final Pattern AZKABAN_HOME_REGEX = Pattern.compile("(.*?)/executions");
 
 }

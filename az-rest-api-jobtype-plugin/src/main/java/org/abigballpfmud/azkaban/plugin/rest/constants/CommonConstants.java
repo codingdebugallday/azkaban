@@ -18,5 +18,6 @@ public class CommonConstants {
      * 自定义参数前缀
      */
    public static final String CUSTOM_PREFIX = "rest";
+   public static final String HTTP = "http";
 
 }

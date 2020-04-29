@@ -3,10 +3,15 @@ package org.abigballpfmud.azkaban.plugin.rest.service.impl;
 import java.util.Objects;
 
 import azkaban.utils.Props;
+import org.abigballofmud.azkaban.common.constants.JobPropsKey;
 import org.abigballofmud.azkaban.common.exception.CustomerJobProcessException;
 import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
+import org.abigballofmud.azkaban.common.utils.CommonUtil;
+import org.abigballofmud.azkaban.common.utils.EurekaUtil;
+import org.abigballofmud.azkaban.common.utils.PropertiesUtil;
 import org.abigballofmud.azkaban.common.utils.RestTemplateUtil;
 import org.abigballpfmud.azkaban.plugin.rest.constants.Auth;
+import org.abigballpfmud.azkaban.plugin.rest.constants.CommonConstants;
 import org.abigballpfmud.azkaban.plugin.rest.constants.Key;
 import org.abigballpfmud.azkaban.plugin.rest.exec.Exec;
 import org.abigballpfmud.azkaban.plugin.rest.exec.HttpExec;
@@ -17,6 +22,7 @@ import org.abigballpfmud.azkaban.plugin.rest.service.ExecuteJobService;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -33,22 +39,62 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
 
     private Auth auth;
     private Exec exec;
+    private Logger log;
 
     @Override
     public void executeJob(Props jobProps, Logger logger) throws CustomerJobProcessException {
         logger.info("start rest api job");
+        log = logger;
         check(jobProps);
+        // 封装参数 内部请求时需生成具体url
+        if (!jobProps.getBoolean(Key.EXTERNAL, true)) {
+            genHdspUrl(jobProps);
+        }
         // 创建RestTemplate
         RestTemplate restTemplate = RestTemplateUtil.getRestTemplate();
         // http执行
         this.exec = new HttpExec(restTemplate, logger);
         // 设置认证Provider
         this.auth.authProvider().provide(restTemplate, jobProps, logger);
-        // 封装参数
         Payload payload = genPayload(jobProps);
         // 获取结果
         Data<?> data = get(payload);
         logger.info("response data: " + data);
+    }
+
+    private void genHdspUrl(Props jobProps) {
+        log.info("handle hdsp rest api, generate real url...");
+        // 覆盖url相关的值
+        String workDir = jobProps.getString(JobPropsKey.WORKING_DIR.getKey());
+        String hdspPropertiesPath = CommonUtil.getHdspPropertiesPath(workDir);
+        EurekaUtil eurekaUtil = EurekaUtil.createEurekaUtilFromProperties(hdspPropertiesPath);
+        String gatewayAppName = PropertiesUtil.getProperties(hdspPropertiesPath, "app.gateway");
+        // http://172.23.16.65:8080/
+        String gatewayUrl = eurekaUtil.getRandomAppById(gatewayAppName).getHomePageUrl();
+        // 覆盖rest.uri
+        // 是否走网关
+        String url = jobProps.get(Key.URI);
+        if (jobProps.getBoolean(Key.USE_GATEWAY, true)) {
+            log.info("real api url: " + gatewayUrl + url);
+            jobProps.put(Key.URI, gatewayUrl + url);
+        } else {
+            String appUrl = eurekaUtil.getRandomAppById(jobProps.getString(Key.APP)).getHomePageUrl();
+            log.info("real api url: " + appUrl + url);
+            jobProps.put(Key.URI, appUrl + url);
+        }
+        // 覆盖 rest.callback.uri
+        String callbackUri = jobProps.getString(Key.CALLBACK_URI, null);
+        if (!StringUtils.isEmpty(callbackUri) && !callbackUri.startsWith(CommonConstants.HTTP)) {
+            // 是否走网关
+            if (jobProps.getBoolean(Key.CALLBACK_USE_GATEWAY, true)) {
+                log.info("real callback url: " + gatewayUrl + callbackUri);
+                jobProps.put(Key.CALLBACK_URI, gatewayUrl + callbackUri);
+            } else {
+                String appUrl = eurekaUtil.getRandomAppById(jobProps.getString(Key.CALLBACK_APP)).getHomePageUrl();
+                log.info("real callback url: " + appUrl + callbackUri);
+                jobProps.put(Key.CALLBACK_URI, appUrl + callbackUri);
+            }
+        }
     }
 
     private Payload genPayload(Props jobProps) {

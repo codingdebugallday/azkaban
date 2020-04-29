@@ -1,15 +1,10 @@
 package org.abigballofmud.azkaban.common.utils;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.regex.Matcher;
 
 import com.google.gson.Gson;
@@ -41,20 +36,17 @@ public class ParamsUtil {
 
     public static String getHdspCoreUrl(Logger log, String hdspPropertiesPath) {
         log.info("load hdsp.properties: " + hdspPropertiesPath);
-        Properties properties = new Properties();
-        try (InputStream in = new BufferedInputStream(new FileInputStream(hdspPropertiesPath))) {
-            properties.load(in);
-            return properties.getProperty("hdsp.core.url");
-        } catch (IOException e) {
-            throw new IllegalStateException("获取hdsp_core服务的url地址出错, " + e);
-        }
+        String eurekaUrl = PropertiesUtil.getProperties(hdspPropertiesPath, "eureka.url");
+        EurekaUtil eurekaUtil = new EurekaUtil(eurekaUrl);
+        return eurekaUtil.getRandomAppById(PropertiesUtil.getProperties(
+                hdspPropertiesPath, "app.core")).getHomePageUrl();
     }
 
     /**
      * 项目客制化需求，内置参数值从表里取
      */
     public static SpecifiedParamsResponse getSpecifiedParams(Logger log, Long tenantId, String workDir, String jobName) {
-        String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
+        String hdspPropertiesPath = CommonUtil.getHdspPropertiesPath(workDir);
         log.info("jobName: " + jobName);
         ResponseEntity<SpecifiedParamsResponse> responseEntity = RESTTEMPLATE.getForEntity(
                 String.format("%s/v2/%d/timestamp-controls/get-increment-param?timestampType=%s",
@@ -75,7 +67,7 @@ public class ParamsUtil {
      * 项目客制化需求，azkaban执行完毕后更新表里的内置参数值
      */
     public static void updateSpecifiedParams(Logger log, String workDir, Long tenantId, String jobName, Boolean success) {
-        String hdspPropertiesPath = CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
+        String hdspPropertiesPath = CommonUtil.getHdspPropertiesPath(workDir);
         String hdspCoreUrl = ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath);
         try {
             SpecifiedParamsResponse specifiedParams = SpecifiedParamsContext.current();

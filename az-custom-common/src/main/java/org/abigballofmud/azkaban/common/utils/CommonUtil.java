@@ -25,4 +25,8 @@ public class CommonUtil {
         }
         throw new IllegalStateException("获取AZKABAN_HOME出错");
     }
+
+    public static String getHdspPropertiesPath(String workDir) {
+        return CommonUtil.getAzHomeByWorkDir(workDir) + "/conf/hdsp.properties";
+    }
 }

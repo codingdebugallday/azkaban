@@ -6,7 +6,10 @@ import java.util.concurrent.TimeUnit;
 import azkaban.utils.Props;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.abigballofmud.azkaban.common.constants.JobPropsKey;
 import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
+import org.abigballofmud.azkaban.common.utils.CommonUtil;
+import org.abigballofmud.azkaban.common.utils.PropertiesUtil;
 import org.abigballpfmud.azkaban.plugin.rest.constants.Key;
 import org.abigballpfmud.azkaban.plugin.rest.model.AccessToken;
 import org.abigballpfmud.azkaban.plugin.rest.utils.ChangeHttpRequest;
@@ -173,7 +176,6 @@ class OAuth2ClientCredentialsAuthProvider implements AuthProvider {
 class OAuth2PasswordAuthProvider implements AuthProvider {
 
     private static final String KEY = "ACCESS_TOKEN";
-    private static final String TOKEN_URI_FMT = "%s?grant_type=password&client_id=%s&client_secret=%s&username=%s&password=%s";
     private static final int TOKEN_MIN_EXPIRED_SECONDS = 10 * 60;
 
     private final RestTemplate tokenRestTemplate;
@@ -195,11 +197,24 @@ class OAuth2PasswordAuthProvider implements AuthProvider {
     public void provide(RestTemplate restTemplate, Props props, Logger log) {
         this.log = log;
         log.info("OAuth2 auth, grant_type: password");
-        this.tokenUri = Conf.require(props, Key.TOKEN_URI);
-        this.clientId = Conf.require(props, Key.CLIENT_ID);
-        this.clientSecret = Conf.require(props, Key.CLIENT_SECRET);
-        this.username = Conf.require(props, Key.USERNAME);
-        this.password = Conf.require(props, Key.PASSWORD);
+        // 判断是内部接口还是外部
+        if (!props.getBoolean(Key.EXTERNAL, true)) {
+            // 内部的话 读配置文件
+            String workDir = props.getString(JobPropsKey.WORKING_DIR.getKey());
+            String hdspPropertiesPath = CommonUtil.getHdspPropertiesPath(workDir);
+            this.tokenUri = PropertiesUtil.getProperties(hdspPropertiesPath, "oauth2.grantType.password.tokenUri");
+            this.clientId = PropertiesUtil.getProperties(hdspPropertiesPath, "oauth2.grantType.password.clientId");
+            this.clientSecret = PropertiesUtil.getProperties(hdspPropertiesPath, "oauth2.grantType.password.clientSecret");
+            this.username = PropertiesUtil.getProperties(hdspPropertiesPath, "oauth2.grantType.password.username");
+            this.password = PropertiesUtil.getProperties(hdspPropertiesPath, "oauth2.grantType.password.password");
+        } else {
+            // 外部
+            this.tokenUri = Conf.require(props, Key.TOKEN_URI);
+            this.clientId = Conf.require(props, Key.CLIENT_ID);
+            this.clientSecret = Conf.require(props, Key.CLIENT_SECRET);
+            this.username = Conf.require(props, Key.USERNAME);
+            this.password = Conf.require(props, Key.PASSWORD);
+        }
         initCache();
         log.info("Add access_token Interceptor");
         // 拦截器
