@@ -19,79 +19,76 @@ import azkaban.executor.ExecutableFlow;
 import azkaban.executor.ExecutableRamp;
 import azkaban.utils.Props;
 import azkaban.utils.TimeUtils;
+import com.google.common.collect.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
- * Simple Auto Ramp Policy will be divided to 4 stages
+ * Simple Auto Ramp Policy will be divided to 5 stages
  *  stage 1: 5%
  *  stage 2: 20%
  *  stage 3: 50%
- *  stage 4: 100%
+ *  stage 4: 75%
+ *  stage 5: 100%
  */
-public class SimpleAutoRampPolicy extends AbstractRampPolicy {
-  private static int RAMP_STAGE_MAX = 4;
-  private static int ONE_DAY = 86400;
+public class SimpleAutoRampPolicy extends SimpleRampPolicy {
+  private static final int MAX_RAMP_STAGE = 5;
+  private static final ImmutableList<Integer> RAMP_STAGE_RESCALE_TABLE = ImmutableList.<Integer>builder()
+      .add(5, 25, 50, 75)
+      .build();
+  private static final ImmutableList<Integer> AUTO_RAMP_INTERVAL_TABLE = ImmutableList.<Integer>builder()
+      .add(1, 2, 3, 4)
+      .build();
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SimpleAutoRampPolicy.class);
+
+
   public SimpleAutoRampPolicy(Props sysProps, Props privateProps) {
     super(sysProps, privateProps);
   }
 
+
   @Override
-  public boolean check(
-      ExecutableFlow flow,
-      ExecutableRamp executableRamp
-  ) {
-    if (executableRamp.getState().isPaused()) {
-      return false;
-    }
-
-    updateForRampUp(executableRamp, RAMP_STAGE_MAX, ONE_DAY);
-
-    int stage = executableRamp.getState().getRampStage();
-    int flowIdHashCode = flow.getId().hashCode();
-    return isInRange(stage, flowIdHashCode);
+  protected int getMaxRampStage() {
+    return MAX_RAMP_STAGE;
   }
 
-  /**
-   * Auto Ramp up to next stage when there is no more change in one day
-   * @param executableRamp executableRamp
-   */
-  protected void updateForRampUp(ExecutableRamp executableRamp, final int maxRampStage, final int interval) {
-    if (TimeUtils.timeEscapedOver(executableRamp.getState().getLastUpdatedTime(), interval)) {
-      int rampStage = executableRamp.getState().getRampStage();
-      if (rampStage < maxRampStage) {
-        executableRamp.getState().setRampStage(rampStage + 1);
-        executableRamp.getState().setLastUpdatedTime(System.currentTimeMillis());
-      } else {
-        executableRamp.getState().setEndTime(System.currentTimeMillis());
+  @Override
+  protected int getRampStage(ExecutableFlow flow) {
+    int percentage = flow.getRampPercentageId();
+    for(int i = 0; i < RAMP_STAGE_RESCALE_TABLE.size(); i++) {
+      if (percentage < RAMP_STAGE_RESCALE_TABLE.get(i)) {
+        return (i + 1);
       }
     }
+    return MAX_RAMP_STAGE;
   }
 
-  /**
-   * Simple Percentage range will be applied
-   * @param stage current stage
-   * @param flowIdHashCode hash code of flow_Id
-   * @return
-   */
-  private boolean isInRange(int stage, int flowIdHashCode) {
-    int percentage = Math.abs(flowIdHashCode % 100);
-    boolean isInRange = false;  // set the safe status
-    switch (stage) {
-      case 0: // stage 0
-        break;
-      case 1: // stage 1 = 5%
-        isInRange = (percentage <= 5);
-        break;
-      case 2: // stage 2 = 20%
-        isInRange = (percentage <= 20);
-        break;
-      case 3: // stage 3 = 50%
-        isInRange = (percentage <= 50);
-        break;
-      default: // stage 4 = 100%
-        isInRange = true;
-        break;
+  @Override
+  protected void preprocess(ExecutableRamp executableRamp) {
+    int escapedDays = TimeUtils.daysEscapedOver(executableRamp.getStartTime());
+    int rampStage = executableRamp.getStage();
+    int maxStage = getMaxRampStage();
+
+    if (rampStage == 0) {
+      // The ramp is still not stated yet. Auto Ramp should not be triggered.
+      return;
     }
-    return isInRange;
+
+    try {
+      if (escapedDays >= AUTO_RAMP_INTERVAL_TABLE.get(rampStage - 1)) {
+        if (rampStage < maxStage) {
+          // Ramp up
+          executableRamp.rampUp(maxStage);
+          LOGGER.info("[AUTO RAMP UP] (rampId = {}, current Stage = {}, new Stage = {}, timeStamp = {}",
+              executableRamp.getId(), rampStage, executableRamp.getStage(),
+              executableRamp.getLastUpdatedTime());
+        }
+      }
+    } catch (Exception e) {
+      LOGGER.error("[AUTO RAMP ERROR] (rampId = {}, ramStage = {}, message = {}",
+          executableRamp.getId(), rampStage, e.getMessage());
+    }
   }
 }
