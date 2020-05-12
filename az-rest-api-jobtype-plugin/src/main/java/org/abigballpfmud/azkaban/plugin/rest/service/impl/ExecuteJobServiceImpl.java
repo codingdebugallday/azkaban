@@ -37,7 +37,6 @@ import org.springframework.web.client.RestTemplate;
  */
 public class ExecuteJobServiceImpl implements ExecuteJobService {
 
-    private Auth auth;
     private Exec exec;
     private Logger log;
 
@@ -45,17 +44,14 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
     public void executeJob(Props jobProps, Logger logger) throws CustomerJobProcessException {
         logger.info("start rest api job");
         log = logger;
-        check(jobProps);
         // 封装参数 内部请求时需生成具体url
         if (!jobProps.getBoolean(Key.EXTERNAL, true)) {
             genHdspUrl(jobProps);
         }
-        // 创建RestTemplate
-        RestTemplate restTemplate = RestTemplateUtil.getRestTemplate();
+        // 创建RestTemplate 并设置认证Provider
+        RestTemplate restTemplate = RestTemplateUtil.getRestTemplateWithAuth(jobProps,logger);
         // http执行
         this.exec = new HttpExec(restTemplate, logger);
-        // 设置认证Provider
-        this.auth.authProvider().provide(restTemplate, jobProps, logger);
         Payload payload = genPayload(jobProps);
         // 获取结果
         Data<?> data = get(payload);
@@ -167,15 +163,5 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             throw new CustomerRuntimeException("http exec failed", e);
         }
     }
-
-    private void check(Props jobProps) {
-        // 验证auth
-        try {
-            this.auth = Auth.valueOf(jobProps.getString(Key.AUTH, Auth.NONE.name()));
-        } catch (Exception e) {
-            throw new CustomerRuntimeException("Properties [" + Key.METHOD + "] invalid");
-        }
-    }
-
 
 }
