@@ -1,11 +1,13 @@
-package org.abigballpfmud.azkaban.plugin.rest.model;
+package org.abigballofmud.azkaban.common.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
+ * <p>
  * AccessToken
+ * </p>
  *
- * @author 奔波儿灞
+ * @author isacc 2020/5/12 17:01
  * @since 1.0
  */
 public class AccessToken {

@@ -1,4 +1,4 @@
-package org.abigballpfmud.azkaban.plugin.rest.utils;
+package org.abigballofmud.azkaban.common.utils;
 
 import java.net.URI;
 
@@ -17,8 +17,7 @@ public class ChangeHttpRequest extends HttpRequestWrapper {
     public ChangeHttpRequest(HttpRequest request, String params) {
         super(request);
         String rawUri = super.getURI().toString();
-        String uri = UrlUtil.concatUrl(rawUri, params);
-        this.uri = URI.create(uri);
+        this.uri = URI.create(UrlUtil.concatUrl(rawUri, params));
     }
 
     @Override

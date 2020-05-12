@@ -1,10 +1,10 @@
-package org.abigballpfmud.azkaban.plugin.rest.constants;
+package org.abigballofmud.azkaban.common.constants;
 
+import org.abigballofmud.azkaban.common.auth.AuthProvider;
+import org.abigballofmud.azkaban.common.auth.BasicAuthProvider;
+import org.abigballofmud.azkaban.common.auth.NoneAuthProvider;
+import org.abigballofmud.azkaban.common.auth.OAuth2AuthProvider;
 import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
-import org.abigballpfmud.azkaban.plugin.rest.auth.AuthProvider;
-import org.abigballpfmud.azkaban.plugin.rest.auth.BasicAuthProvider;
-import org.abigballpfmud.azkaban.plugin.rest.auth.NoneAuthProvider;
-import org.abigballpfmud.azkaban.plugin.rest.auth.OAuth2AuthProvider;
 
 /**
  * <p>

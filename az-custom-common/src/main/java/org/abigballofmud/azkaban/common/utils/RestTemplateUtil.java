@@ -3,6 +3,11 @@ package org.abigballofmud.azkaban.common.utils;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import azkaban.utils.Props;
+import org.abigballofmud.azkaban.common.constants.Auth;
+import org.abigballofmud.azkaban.common.constants.Key;
+import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
+import org.apache.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -40,6 +45,24 @@ public class RestTemplateUtil {
             }
         }
         return restTemplate;
+    }
+
+    public static RestTemplate getRestTemplateWithAuth(Props props, Logger logger) {
+        RestTemplate restTemplate = getRestTemplate();
+        configAuth(props, logger);
+        return restTemplate;
+    }
+
+    private static void configAuth(Props props, Logger logger) {
+        // 验证auth
+        Auth auth;
+        try {
+            auth = Auth.valueOf(props.getString(Key.AUTH, Auth.NONE.name()));
+        } catch (Exception e) {
+            throw new CustomerRuntimeException("Properties [" + Key.METHOD + "] invalid");
+        }
+        // 设置认证Provider
+        auth.authProvider().provide(restTemplate, props, logger);
     }
 
     public static HttpHeaders httpHeaders() {

@@ -4,7 +4,7 @@
 - 在项目路径下`gradlew build -x test`，
 然后会在当前模块路径下生成
 `build/distributions/az-sql-jobtype-plugin-${version}.zip`包
-- 解压zip包，里面的datax文件夹放入`azkaban-exec-server/plugins/jobtypes`目录下即可
+- 解压zip包，里面的sql文件夹放入`azkaban-exec-server/plugins/jobtypes`目录下即可
 
 - 解压后目录结构
 ```

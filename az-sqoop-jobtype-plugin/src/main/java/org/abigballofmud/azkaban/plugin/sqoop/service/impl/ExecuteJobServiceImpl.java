@@ -3,11 +3,8 @@ package org.abigballofmud.azkaban.plugin.sqoop.service.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import azkaban.utils.Props;
-import org.abigballofmud.azkaban.common.constants.JobPropsKey;
-import org.abigballofmud.azkaban.plugin.sqoop.constants.CommonConstants;
 import org.abigballofmud.azkaban.plugin.sqoop.constants.SqoopJobPropKeys;
 import org.abigballofmud.azkaban.plugin.sqoop.service.ExecuteJobService;
 import org.abigballofmud.azkaban.plugin.sqoop.utils.SqoopJobUtil;
@@ -33,13 +30,10 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         List<String> sqoopCommandFromProps = getSqoopCommandFromProps(sqoopJobProps);
         // 生成具体的sqoop命令
         ArrayList<String> list = new ArrayList<>(sqoopCommandFromProps.size());
-        sqoopCommandFromProps.forEach(command -> {
-            // 替换Json脚本参数
-            Map<String, String> params = sqoopJobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
-            String jobName = sqoopJobProps.get(JobPropsKey.JOB_ID.getKey());
-            String workDir = sqoopJobProps.get(JobPropsKey.WORKING_DIR.getKey());
-            list.add(SqoopJobUtil.replacePlaceHolderForJson(log, command, params, workDir, jobName));
-        });
+        // 替换Json脚本参数
+        sqoopCommandFromProps.forEach(command ->
+                list.add(SqoopJobUtil.replacePlaceHolderForJson(sqoopJobProps, logger, command))
+        );
         return list;
     }
 

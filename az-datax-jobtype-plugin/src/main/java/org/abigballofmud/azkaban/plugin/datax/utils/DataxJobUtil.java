@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import azkaban.utils.Props;
+import org.abigballofmud.azkaban.common.constants.JobPropsKey;
 import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.plugin.datax.constants.CommonConstants;
 import org.abigballofmud.azkaban.plugin.datax.exception.DataxRuntimeException;
@@ -49,11 +51,11 @@ public class DataxJobUtil {
         return jsonFile;
     }
 
-    public static String replacePlaceHolderForJson(Logger log,
-                                                   String jsonStr,
-                                                   Map<String, String> params,
-                                                   String workDir,
-                                                   String jobName) {
+    public static String replacePlaceHolderForJson(Props dataxJobProps,
+                                                   Logger log,
+                                                   String jsonStr) {
+        Map<String, String> params = dataxJobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
+        String jobName = dataxJobProps.get(JobPropsKey.JOB_ID.getKey());
         // 处理job传的参数
         if (!(params == null || params.isEmpty())) {
             for (Map.Entry<String, String> entry : params.entrySet()) {
@@ -64,11 +66,15 @@ public class DataxJobUtil {
             }
         }
         // 处理内置参数
-        return ParamsUtil.handlePredefinedParams(log, jsonStr, workDir, jobName);
+        ParamsUtil paramsUtil = new ParamsUtil(dataxJobProps, log);
+        return paramsUtil.handlePredefinedParams(jsonStr, jobName);
     }
 
-    public static File generateTempJsonFileForExecute(String jsonStr, String workingDir, String fileName) throws IOException {
-        String tempFileName = genTempJsonFileName(workingDir, fileName);
+    public static File generateTempJsonFileForExecute(Props dataxJobProps,
+                                                      String jsonStr,
+                                                      String fileName) throws IOException {
+        String workDir = dataxJobProps.get(JobPropsKey.WORKING_DIR.getKey());
+        String tempFileName = genTempJsonFileName(workDir, fileName);
         File tempFile = new File(tempFileName);
         FileUtils.writeStringToFile(tempFile, jsonStr, StandardCharsets.UTF_8.name());
         return tempFile;

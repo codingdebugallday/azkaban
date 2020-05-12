@@ -1,4 +1,4 @@
-package org.abigballpfmud.azkaban.plugin.rest.auth;
+package org.abigballofmud.azkaban.common.auth;
 
 import azkaban.utils.Props;
 import org.apache.log4j.Logger;

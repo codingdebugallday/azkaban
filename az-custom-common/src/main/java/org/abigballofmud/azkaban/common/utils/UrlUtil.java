@@ -1,9 +1,9 @@
-package org.abigballpfmud.azkaban.plugin.rest.utils;
+package org.abigballofmud.azkaban.common.utils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.abigballpfmud.azkaban.plugin.rest.constants.Key;
+import org.abigballofmud.azkaban.common.constants.Key;
 import org.springframework.util.StringUtils;
 
 /**

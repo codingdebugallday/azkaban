@@ -7,7 +7,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
+import azkaban.utils.Props;
 import com.google.gson.Gson;
+import org.abigballofmud.azkaban.common.constants.JobPropsKey;
 import org.abigballofmud.azkaban.common.domain.SpecifiedParamsResponse;
 import org.abigballofmud.azkaban.common.params.PredefinedParams;
 import org.abigballofmud.azkaban.common.params.SimpleTimeUnitEnum;
@@ -26,15 +28,21 @@ import org.springframework.web.client.RestTemplate;
  */
 public class ParamsUtil {
 
-    private ParamsUtil() {
-        throw new IllegalStateException("context class");
-    }
-
-    private static final RestTemplate RESTTEMPLATE = RestTemplateUtil.getRestTemplate();
+    private final RestTemplate restTemplate;
+    private final Logger log;
+    private final Props props;
     private static final Gson GSON = new Gson();
     private static final String PARAM_PATTERN = "\\$\\{%s\\}";
 
-    public static String getHdspCoreUrl(Logger log, String hdspPropertiesPath) {
+    public ParamsUtil(Props props, Logger logger) {
+        this.props = props;
+        this.log = logger;
+        restTemplate = RestTemplateUtil.getRestTemplateWithAuth(props, logger);
+    }
+
+    public String getHdspCoreUrl() {
+        String workDir = props.getString(JobPropsKey.WORKING_DIR.getKey());
+        String hdspPropertiesPath = CommonUtil.getHdspPropertiesPath(workDir);
         log.info("load hdsp.properties: " + hdspPropertiesPath);
         String eurekaUrl = PropertiesUtil.getProperties(hdspPropertiesPath, "eureka.url");
         EurekaUtil eurekaUtil = new EurekaUtil(eurekaUrl);
@@ -45,12 +53,11 @@ public class ParamsUtil {
     /**
      * 项目客制化需求，内置参数值从表里取
      */
-    public static SpecifiedParamsResponse getSpecifiedParams(Logger log, Long tenantId, String workDir, String jobName) {
-        String hdspPropertiesPath = CommonUtil.getHdspPropertiesPath(workDir);
+    public SpecifiedParamsResponse getSpecifiedParams(Long tenantId, String jobName) {
         log.info("jobName: " + jobName);
-        ResponseEntity<SpecifiedParamsResponse> responseEntity = RESTTEMPLATE.getForEntity(
+        ResponseEntity<SpecifiedParamsResponse> responseEntity = restTemplate.getForEntity(
                 String.format("%s/v2/%d/timestamp-controls/get-increment-param?timestampType=%s",
-                        ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath),
+                        getHdspCoreUrl(),
                         tenantId,
                         jobName),
                 SpecifiedParamsResponse.class);
@@ -66,9 +73,8 @@ public class ParamsUtil {
     /**
      * 项目客制化需求，azkaban执行完毕后更新表里的内置参数值
      */
-    public static void updateSpecifiedParams(Logger log, String workDir, Long tenantId, String jobName, Boolean success) {
-        String hdspPropertiesPath = CommonUtil.getHdspPropertiesPath(workDir);
-        String hdspCoreUrl = ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath);
+    public void updateSpecifiedParams(Long tenantId, String jobName, Boolean success) {
+        String hdspCoreUrl = getHdspCoreUrl();
         try {
             SpecifiedParamsResponse specifiedParams = SpecifiedParamsContext.current();
             // 判断是否需要去更新 无内置参数可不更新
@@ -86,7 +92,7 @@ public class ParamsUtil {
             body.put("lastMaxId", specifiedParams.getLastMaxId());
             body.put("success", Optional.ofNullable(success).orElse(false));
             HttpEntity<String> requestEntity = new HttpEntity<>(GSON.toJson(body), RestTemplateUtil.httpHeaders());
-            ResponseEntity<String> responseEntity = RESTTEMPLATE.postForEntity(
+            ResponseEntity<String> responseEntity = restTemplate.postForEntity(
                     String.format("%s/v2/%d/timestamp-controls/update-increment", hdspCoreUrl, tenantId),
                     requestEntity, String.class);
             if (Objects.requireNonNull(requestEntity.getBody()).contains(PredefinedParams.FAILED)) {
@@ -101,15 +107,13 @@ public class ParamsUtil {
     /**
      * 对内置参数的处理
      *
-     * @param log     az log
      * @param str     替换的文本
-     * @param workDir az执行目录
      * @param jobName az job_id
      * @return java.lang.String
      */
-    public static String handlePredefinedParams(Logger log, String str, String workDir, String jobName) {
+    public String handlePredefinedParams( String str, String jobName) {
         Matcher matcher = PredefinedParams.PREDEFINED_PARAM_REGEX.matcher(str);
-        SpecifiedParamsResponse specifiedParamsResponse = getSpecifiedParams(log, 0L, workDir, jobName);
+        SpecifiedParamsResponse specifiedParamsResponse = getSpecifiedParams(0L, jobName);
         while (matcher.find()) {
             // _p_current_data_time
             if (matcher.group(1).trim().contains(PredefinedParams.CURRENT_DATE_TIME)) {
@@ -137,7 +141,7 @@ public class ParamsUtil {
         return str;
     }
 
-    private static String handleDateTime(String str, String matcher, SpecifiedParamsResponse specifiedParamsResponse) {
+    private String handleDateTime(String str, String matcher, SpecifiedParamsResponse specifiedParamsResponse) {
         DateTimeFormatter defaultFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         // 表查不到当前时间取本地时间
         String originDataTime = Optional.ofNullable(specifiedParamsResponse.getCurrentDataTime())
@@ -165,7 +169,7 @@ public class ParamsUtil {
         return str;
     }
 
-    private static String genLocalDateTime(String originDataTime, DateTimeFormatter defaultFormatter, Long interval, String unit) {
+    private String genLocalDateTime(String originDataTime, DateTimeFormatter defaultFormatter, Long interval, String unit) {
         LocalDateTime localDateTime = LocalDateTime.parse(originDataTime, defaultFormatter);
         String currentDateTime;
         switch (SimpleTimeUnitEnum.valueOf(unit.toUpperCase())) {

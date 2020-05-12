@@ -3,6 +3,7 @@ ext {
 }
 
 dependencies {
+    compile project(':az-core')
     compile "com.google.code.gson:gson:${gsonVersion}"
     compile group: 'org.springframework', name: 'spring-web', version: '5.2.2.RELEASE'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.10'

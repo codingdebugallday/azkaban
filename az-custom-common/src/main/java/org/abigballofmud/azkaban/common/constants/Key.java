@@ -1,4 +1,4 @@
-package org.abigballpfmud.azkaban.plugin.rest.constants;
+package org.abigballofmud.azkaban.common.constants;
 
 /**
  * <p>

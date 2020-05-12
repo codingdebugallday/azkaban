@@ -1,12 +1,12 @@
-package org.abigballpfmud.azkaban.plugin.rest.auth;
+package org.abigballofmud.azkaban.common.auth;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import org.apache.log4j.Logger;
 
 import azkaban.utils.Props;
-import org.abigballpfmud.azkaban.plugin.rest.constants.Key;
-import org.abigballpfmud.azkaban.plugin.rest.utils.Conf;
+import org.abigballofmud.azkaban.common.constants.Key;
+import org.abigballofmud.azkaban.common.utils.Conf;
+import org.apache.log4j.Logger;
 import org.springframework.web.client.RestTemplate;
 
 /**

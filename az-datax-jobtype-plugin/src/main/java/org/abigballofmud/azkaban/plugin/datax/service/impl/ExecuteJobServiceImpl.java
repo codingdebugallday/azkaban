@@ -53,14 +53,11 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             // 加载配置的json脚本文件
             File jsonFile = DataxJobUtil.loadJsonFile(realFilePath);
             // 替换Json脚本参数
-            Map<String, String> params = dataxJobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
-            String workDir = dataxJobProps.get(JobPropsKey.WORKING_DIR.getKey());
-            String jobName = dataxJobProps.get(JobPropsKey.JOB_ID.getKey());
-            String jsonStr = DataxJobUtil.replacePlaceHolderForJson(log,
-                    FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8.name()),
-                    params, workDir, jobName);
+            String jsonStr = DataxJobUtil.replacePlaceHolderForJson(dataxJobProps, log,
+                    FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8.name()));
             // 待执行的Json脚本写入临时文件
-            File execJsonFile = DataxJobUtil.generateTempJsonFileForExecute(jsonStr, workDir, jsonFile.getName());
+            File execJsonFile = DataxJobUtil.generateTempJsonFileForExecute(dataxJobProps,
+                    jsonStr, jsonFile.getName());
             return String.format("python %s/bin/datax.py %s",
                     Optional.ofNullable(dataxJobProps.get(DataxJobPropKeys.DATAX_HOME.getKey())).orElse("$DATAX_HOME"),
                     execJsonFile.getAbsolutePath());

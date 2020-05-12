@@ -1,4 +1,4 @@
-package org.abigballpfmud.azkaban.plugin.rest.auth;
+package org.abigballofmud.azkaban.common.auth;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -7,14 +7,10 @@ import azkaban.utils.Props;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.abigballofmud.azkaban.common.constants.JobPropsKey;
+import org.abigballofmud.azkaban.common.constants.Key;
+import org.abigballofmud.azkaban.common.domain.AccessToken;
 import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
-import org.abigballofmud.azkaban.common.utils.CommonUtil;
-import org.abigballofmud.azkaban.common.utils.PropertiesUtil;
-import org.abigballpfmud.azkaban.plugin.rest.constants.Key;
-import org.abigballpfmud.azkaban.plugin.rest.model.AccessToken;
-import org.abigballpfmud.azkaban.plugin.rest.utils.ChangeHttpRequest;
-import org.abigballpfmud.azkaban.plugin.rest.utils.Conf;
-import org.abigballpfmud.azkaban.plugin.rest.utils.Retry;
+import org.abigballofmud.azkaban.common.utils.*;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;

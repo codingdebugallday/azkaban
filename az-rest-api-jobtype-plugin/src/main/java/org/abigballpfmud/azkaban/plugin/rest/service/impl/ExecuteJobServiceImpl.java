@@ -3,16 +3,16 @@ package org.abigballpfmud.azkaban.plugin.rest.service.impl;
 import java.util.Objects;
 
 import azkaban.utils.Props;
+import org.abigballofmud.azkaban.common.constants.Auth;
 import org.abigballofmud.azkaban.common.constants.JobPropsKey;
+import org.abigballofmud.azkaban.common.constants.Key;
 import org.abigballofmud.azkaban.common.exception.CustomerJobProcessException;
 import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
 import org.abigballofmud.azkaban.common.utils.CommonUtil;
 import org.abigballofmud.azkaban.common.utils.EurekaUtil;
 import org.abigballofmud.azkaban.common.utils.PropertiesUtil;
 import org.abigballofmud.azkaban.common.utils.RestTemplateUtil;
-import org.abigballpfmud.azkaban.plugin.rest.constants.Auth;
 import org.abigballpfmud.azkaban.plugin.rest.constants.CommonConstants;
-import org.abigballpfmud.azkaban.plugin.rest.constants.Key;
 import org.abigballpfmud.azkaban.plugin.rest.exec.Exec;
 import org.abigballpfmud.azkaban.plugin.rest.exec.HttpExec;
 import org.abigballpfmud.azkaban.plugin.rest.model.Data;

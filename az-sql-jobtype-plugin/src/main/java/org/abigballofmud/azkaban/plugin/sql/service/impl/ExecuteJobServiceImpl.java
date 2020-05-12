@@ -8,7 +8,6 @@ import java.util.*;
 import azkaban.utils.Props;
 import com.google.gson.Gson;
 import org.abigballofmud.azkaban.common.constants.JobPropsKey;
-import org.abigballofmud.azkaban.common.utils.CommonUtil;
 import org.abigballofmud.azkaban.common.utils.ParamsUtil;
 import org.abigballofmud.azkaban.common.utils.RestTemplateUtil;
 import org.abigballofmud.azkaban.plugin.sql.constants.CommonConstants;
@@ -46,8 +45,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         List<String> sqlFilePaths = getSqlFilesFormProps(jobProps);
         // 循环执行配置SQL脚本
         String workDir = jobProps.getString(JobPropsKey.WORKING_DIR.getKey());
-        String hdspPropertiesPath = CommonUtil.getHdspPropertiesPath(workDir);
-        String hdspCoreUrl = ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath);
+        ParamsUtil paramsUtil = new ParamsUtil(jobProps, logger);
         for (String sqlFilePath : sqlFilePaths) {
             String realFilePath;
             if (!SqlJobUtil.isAbsolutePath(sqlFilePath)) {
@@ -55,11 +53,13 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             } else {
                 realFilePath = sqlFilePath;
             }
-            executeSingleSqlFile(hdspCoreUrl, jobProps, realFilePath);
+            executeSingleSqlFile(paramsUtil, jobProps, realFilePath);
         }
     }
 
-    private void executeSingleSqlFile(String hdspCoreUrl, Props jobProps, String sqlFilePath) throws SqlJobProcessException {
+    private void executeSingleSqlFile(ParamsUtil paramsUtil,
+                                      Props jobProps,
+                                      String sqlFilePath) throws SqlJobProcessException {
         // 加载配置的sql脚本文件
         File sqlFile = SqlJobUtil.loadSqlFile(sqlFilePath);
         String jobName = jobProps.get(JobPropsKey.JOB_ID.getKey());
@@ -69,13 +69,13 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             String sqlStr = FileUtils.readFileToString(sqlFile, StandardCharsets.UTF_8.name());
             Map<String, String> params = jobProps.getMapByPrefix(CommonConstants.CUSTOM_PREFIX);
             String workDir = jobProps.get(JobPropsKey.WORKING_DIR.getKey());
-            String realSql = SqlJobUtil.replacePlaceHolderForSql(log, sqlStr, params, workDir, jobName);
+            String realSql = SqlJobUtil.replacePlaceHolderForSql(paramsUtil, sqlStr, params, jobName);
             // 执行SQL脚本
             String executeType = Optional.ofNullable(jobProps.get(SqlJobPropKeys.SQL_EXECUTE_TYPE.getKey()))
                     .orElse(CommonConstants.HTTP);
             if (CommonConstants.HTTP.equalsIgnoreCase(executeType)) {
                 // 默认执行方式为http 接口请求 平台客制化功能 不用在意
-                executeHttpTypeSql(jobProps, realSql, workDir);
+                executeHttpTypeSql(paramsUtil, jobProps, realSql);
             } else if (CommonConstants.JDBC.equalsIgnoreCase(executeType)) {
                 // 一般走jdbc的方式
                 // 待执行的SQL脚本写入临时文件
@@ -96,7 +96,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             throw new SqlJobProcessException("Sql file to string error", e);
         } finally {
             // 更新内置参数
-            ParamsUtil.updateSpecifiedParams(log, hdspCoreUrl, 0L, jobName, success);
+            paramsUtil.updateSpecifiedParams(0L, jobName, success);
         }
 
     }
@@ -105,12 +105,14 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
      * 平台客制化功能，不用关心，因为平台自定义了很多驱动，这里执行sql需要请求接口
      * 一般只需设置sql.execute.type为jdbc即可
      *
-     * @param jobProps azkaban job参数
-     * @param sql      执行的sql
-     * @param workDir  工作目录
+     * @param paramsUtil ParamsUtil
+     * @param jobProps   azkaban job参数
+     * @param sql        执行的sql
      * @author abigballofmud 2019/12/25 14:35
      */
-    private void executeHttpTypeSql(Props jobProps, String sql, String workDir) throws SqlJobProcessException {
+    private void executeHttpTypeSql(ParamsUtil paramsUtil,
+                                    Props jobProps,
+                                    String sql) throws SqlJobProcessException {
         // http://192.168.11.212:8510/v2/18/datasources/exec-sql
         // {
         //   "customize": true,
@@ -120,9 +122,8 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         //   "tenantId": 18
         // }
         String urlTmp = jobProps.get(SqlJobPropKeys.SQL_HTTP_URL.getKey());
-        if(StringUtils.isEmpty(urlTmp)){
-            String hdspPropertiesPath = CommonUtil.getHdspPropertiesPath(workDir);
-            urlTmp = ParamsUtil.getHdspCoreUrl(log, hdspPropertiesPath);
+        if (StringUtils.isEmpty(urlTmp)) {
+            urlTmp = paramsUtil.getHdspCoreUrl();
         }
         String url = Optional.ofNullable(urlTmp)
                 .orElseThrow(() -> new SqlJobProcessException("Sql http url is null"));

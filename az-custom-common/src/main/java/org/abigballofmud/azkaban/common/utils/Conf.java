@@ -1,4 +1,4 @@
-package org.abigballpfmud.azkaban.plugin.rest.utils;
+package org.abigballofmud.azkaban.common.utils;
 
 import java.util.Properties;
 
