@@ -8,10 +8,7 @@ import org.abigballofmud.azkaban.common.constants.JobPropsKey;
 import org.abigballofmud.azkaban.common.constants.Key;
 import org.abigballofmud.azkaban.common.exception.CustomerJobProcessException;
 import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
-import org.abigballofmud.azkaban.common.utils.CommonUtil;
-import org.abigballofmud.azkaban.common.utils.EurekaUtil;
-import org.abigballofmud.azkaban.common.utils.PropertiesUtil;
-import org.abigballofmud.azkaban.common.utils.RestTemplateUtil;
+import org.abigballofmud.azkaban.common.utils.*;
 import org.abigballpfmud.azkaban.plugin.rest.constants.CommonConstants;
 import org.abigballpfmud.azkaban.plugin.rest.exec.Exec;
 import org.abigballpfmud.azkaban.plugin.rest.exec.HttpExec;
@@ -49,9 +46,10 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             genHdspUrl(jobProps);
         }
         // 创建RestTemplate 并设置认证Provider
-        RestTemplate restTemplate = RestTemplateUtil.getRestTemplateWithAuth(jobProps,logger);
+        RestTemplate restTemplate = RestTemplateUtil.getRestTemplateWithAuth(jobProps, logger);
         // http执行
         this.exec = new HttpExec(restTemplate, logger);
+        // 涉及到内置参数替换，如url/query/body等
         Payload payload = genPayload(jobProps);
         // 获取结果
         Data<?> data = get(payload);
@@ -94,12 +92,15 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
     }
 
     private Payload genPayload(Props jobProps) {
+        String jobName = jobProps.get(JobPropsKey.JOB_ID.getKey());
+        ParamsUtil paramsUtil = new ParamsUtil(jobProps, log);
+        // 内置参数 URI/QUERY/BODY/CALLBACK_URI
         return Payload.of()
                 // 接口信息
                 .putArgs(Key.EXTERNAL, jobProps.getString(Key.EXTERNAL, "true"))
                 // 表达式、请求方式
                 .putArgs(Key.METHOD, jobProps.getString(Key.METHOD, RequestMethod.GET.name()))
-                .putArgs(Key.URI, jobProps.get(Key.URI))
+                .putArgs(Key.URI, paramsUtil.handlePredefinedParams(jobProps.get(Key.URI), jobName))
                 .putArgs(Key.CONTENT_TYPE, jobProps.getString(Key.CONTENT_TYPE, "application/json"))
                 // 授权信息
                 .putArgs(Key.AUTH, jobProps.getString(Key.AUTH, Auth.NONE.name()))
@@ -113,8 +114,8 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
                 // .putArgs("request", jobProps.getString(Key.REQUEST))
                 // 请求参数
                 .putArgs(Key.HEADER, jobProps.getString(Key.HEADER, null))
-                .putArgs(Key.QUERY, jobProps.getString(Key.QUERY, null))
-                .putArgs(Key.BODY, jobProps.getString(Key.BODY, null))
+                .putArgs(Key.QUERY, paramsUtil.handlePredefinedParams(jobProps.getString(Key.QUERY, null), jobName))
+                .putArgs(Key.BODY, paramsUtil.handlePredefinedParams(jobProps.getString(Key.BODY, null), jobName))
                 // api重试
                 .putArgs(Key.ENABLED_RETRY, jobProps.getString(Key.BODY, "false"))
                 .putArgs(Key.RETRY_NUMBER, jobProps.getString(Key.RETRY_NUMBER, "3"))
@@ -122,11 +123,13 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
                 .putArgs(Key.ENABLED_RETRY_EXPONENTIAL, jobProps.getString(Key.ENABLED_RETRY_EXPONENTIAL, "true"))
                 // callback
                 .putArgs(Key.ENABLED_CALLBACK, jobProps.getString(Key.ENABLED_CALLBACK, "false"))
-                .putArgs(Key.CALLBACK_URI, jobProps.getString(Key.CALLBACK_URI, null))
+                .putArgs(Key.CALLBACK_URI, paramsUtil.handlePredefinedParams(jobProps.getString(Key.CALLBACK_URI, null), jobName))
                 .putArgs(Key.CALLBACK_INTERVAL, jobProps.getString(Key.CALLBACK_INTERVAL, "5"))
                 .putArgs(Key.CALLBACK_NUMBER, jobProps.getString(Key.CALLBACK_NUMBER, "3"))
                 .putArgs(Key.ENABLED_CALLBACK_EXPONENTIAL, jobProps.getString(Key.ENABLED_CALLBACK_EXPONENTIAL, "true"))
-                .putArgs(Key.CALLBACK_FINISH_SUCCESS, jobProps.getString(Key.CALLBACK_FINISH_SUCCESS, "true"));
+                .putArgs(Key.CALLBACK_FINISH_SUCCESS, jobProps.getString(Key.CALLBACK_FINISH_SUCCESS, "true"))
+                .putArgs(Key.CALLBACK_RESPONSE_KEY, jobProps.getString(Key.CALLBACK_RESPONSE_KEY, null))
+                .putArgs(Key.CALLBACK_RESPONSE_VALUE, jobProps.getString(Key.CALLBACK_RESPONSE_VALUE, null));
     }
 
     private Data<?> get(Payload payload) throws CustomerJobProcessException {

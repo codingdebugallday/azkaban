@@ -32,10 +32,14 @@ rest.callback.uri=xstr/v1/0/sql-jobs/test/testJobCode01
 rest.callback.useGateway=true
 rest.callback.app=hdsp-streaming
 # 单位秒，默认5秒
-rest.callback.interval=10
+rest.callback.interval=25
 # 最多异步状态接口查询3次，默认3次
 rest.callback.number=3
 # 状态接口查询3次后，若还是running或failed，则结束任务，默认是success即true
 rest.callback.finishSuccess=true
+# callback回调返回json解析的key
+rest.callback.responseKey=status
+# callback回调返回json解析的value
+rest.callback.responseValue=FINISHED
 
 type=rest

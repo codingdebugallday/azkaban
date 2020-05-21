@@ -16,6 +16,7 @@ import org.abigballofmud.azkaban.common.params.SimpleTimeUnitEnum;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -111,7 +112,10 @@ public class ParamsUtil {
      * @param jobName az job_id
      * @return java.lang.String
      */
-    public String handlePredefinedParams( String str, String jobName) {
+    public String handlePredefinedParams(String str, String jobName) {
+        if (StringUtils.isEmpty(str)) {
+            return str;
+        }
         Matcher matcher = PredefinedParams.PREDEFINED_PARAM_REGEX.matcher(str);
         SpecifiedParamsResponse specifiedParamsResponse = getSpecifiedParams(0L, jobName);
         while (matcher.find()) {

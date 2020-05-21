@@ -25,13 +25,15 @@ public class Key {
     public static final String ENABLED_RETRY = PREFIX + "retry.enabled";
     public static final String RETRY_NUMBER = PREFIX + "retry.number";
     public static final String RETRY_INTERVAL = PREFIX + "retry.interval";
-    public static final String  ENABLED_RETRY_EXPONENTIAL = PREFIX + "retry.exponential";
+    public static final String ENABLED_RETRY_EXPONENTIAL = PREFIX + "retry.exponential";
     /**
      * 如异步接口，需获取接口是否执行完毕，故需提供一个查询接口执行状态的接口
      * 若接口还未执行完成，隔多长时间再次调用查询是否执行完毕
      * 单位 秒，默认间隔5秒，默认指数递增
      * 最多查询几次，默认3次
-     * 查询3次后，若还是running或failed则默认结束，az job状态为success
+     * callback回调返回值json解析，通过responseKey获取value value与responseValue对比
+     * 相等则执行完成，不等即job还是running或failed状态
+     * 若查询3次后，若还是running或failed则默认结束，az job状态为success
      */
     public static final String ENABLED_CALLBACK = PREFIX + "callback.enabled";
     public static final String CALLBACK_URI = PREFIX + "callback.uri";
@@ -39,8 +41,10 @@ public class Key {
     public static final String CALLBACK_APP = PREFIX + "callback.app";
     public static final String CALLBACK_INTERVAL = PREFIX + "callback.interval";
     public static final String CALLBACK_NUMBER = PREFIX + "callback.number";
-    public static final String ENABLED_CALLBACK_EXPONENTIAL = PREFIX +"callback.exponential";
-    public static final String CALLBACK_FINISH_SUCCESS = PREFIX +"callback.finishSuccess";
+    public static final String ENABLED_CALLBACK_EXPONENTIAL = PREFIX + "callback.exponential";
+    public static final String CALLBACK_FINISH_SUCCESS = PREFIX + "callback.finishSuccess";
+    public static final String CALLBACK_RESPONSE_KEY = PREFIX + "callback.responseKey";
+    public static final String CALLBACK_RESPONSE_VALUE = PREFIX + "callback.responseValue";
 
     public static final String USE_GATEWAY = PREFIX + "useGateway";
     public static final String APP = PREFIX + "app";

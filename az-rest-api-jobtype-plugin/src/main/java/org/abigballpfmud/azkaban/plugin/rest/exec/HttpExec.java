@@ -5,12 +5,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.abigballofmud.azkaban.common.constants.Key;
 import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
+import org.abigballofmud.azkaban.common.utils.JsonUtil;
 import org.abigballofmud.azkaban.common.utils.RetryUtil;
 import org.abigballofmud.azkaban.common.utils.UrlUtil;
-import org.abigballpfmud.azkaban.plugin.rest.constants.Status;
 import org.abigballpfmud.azkaban.plugin.rest.model.Payload;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
@@ -99,9 +100,13 @@ public class HttpExec implements Exec {
                                               HttpEntity<String> entity) {
         return RetryUtil.executeWithRetry(() -> {
                     ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-                    if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
-                        if (!responseEntity.getBody().contains(Status.SUCCESS.name())) {
-                            log.error("callback one, response: " + responseEntity);
+                    String body = responseEntity.getBody();
+                    if (responseEntity.getStatusCode().is2xxSuccessful() && body != null) {
+                        // 解析body json格式字符串 根据配置的key获取value 与配置的value对比 相等则执行完成
+                        String responseValue = JsonUtil.getJsonNodeValue(new ObjectMapper().readTree(body),
+                                payload.getOrThrow(Key.CALLBACK_RESPONSE_KEY));
+                        if (!responseValue.equals(payload.getOrThrow(Key.CALLBACK_RESPONSE_VALUE))) {
+                            log.warn("callback one, response: " + responseEntity);
                             throw new CustomerRuntimeException("callback one, response: " + responseEntity);
                         } else {
                             log.info("callback success, response: " + responseEntity);
