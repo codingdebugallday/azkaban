@@ -105,11 +105,12 @@ public class HttpExec implements Exec {
                         // 解析body json格式字符串 根据配置的key获取value 与配置的value对比 相等则执行完成
                         String responseValue = JsonUtil.getJsonNodeValue(new ObjectMapper().readTree(body),
                                 payload.getOrThrow(Key.CALLBACK_RESPONSE_KEY));
-                        if (!responseValue.equals(payload.getOrThrow(Key.CALLBACK_RESPONSE_VALUE))) {
-                            log.warn("callback one, response: " + responseEntity);
-                            throw new CustomerRuntimeException("callback one, response: " + responseEntity);
+                        String compareValue = payload.getOrThrow(Key.CALLBACK_RESPONSE_VALUE);
+                        log.info("responseValue: " + responseValue + ", compareValue: " + compareValue);
+                        if (!compareValue.equals(responseValue)) {
+                            throw new CustomerRuntimeException("callback one, the api is running or failed, response: " + body);
                         } else {
-                            log.info("callback success, response: " + responseEntity);
+                            log.info("callback success, response: " + body);
                         }
                     }
                     return responseEntity;
