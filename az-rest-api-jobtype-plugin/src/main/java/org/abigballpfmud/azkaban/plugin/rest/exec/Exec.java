@@ -1,5 +1,6 @@
 package org.abigballpfmud.azkaban.plugin.rest.exec;
 
+import org.abigballofmud.azkaban.common.exception.CustomerJobProcessException;
 import org.abigballpfmud.azkaban.plugin.rest.model.Payload;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,6 @@ public interface Exec {
      * @param payload Payload
      * @return MutablePair
      */
-    MutablePair<ResponseEntity<String>, ResponseEntity<String>> doExec(Payload payload);
+    MutablePair<ResponseEntity<String>, ResponseEntity<String>> doExec(Payload payload) throws CustomerJobProcessException;
 
 }

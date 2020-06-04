@@ -8,6 +8,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.abigballofmud.azkaban.common.constants.Key;
+import org.abigballofmud.azkaban.common.exception.CustomerJobProcessException;
 import org.abigballofmud.azkaban.common.exception.CustomerRuntimeException;
 import org.abigballofmud.azkaban.common.utils.JsonUtil;
 import org.abigballofmud.azkaban.common.utils.RetryUtil;
@@ -39,7 +40,7 @@ public class HttpExec implements Exec {
     }
 
     @Override
-    public MutablePair<ResponseEntity<String>, ResponseEntity<String>> doExec(Payload payload) {
+    public MutablePair<ResponseEntity<String>, ResponseEntity<String>> doExec(Payload payload) throws CustomerJobProcessException {
         String uri = uri(payload);
         HttpMethod method = HttpMethod.resolve(payload.getOrThrow(Key.METHOD));
         log.info(String.format("uri: %s, method: %s", uri, method));
@@ -66,7 +67,7 @@ public class HttpExec implements Exec {
     }
 
     private MutablePair<ResponseEntity<String>, ResponseEntity<String>> handle(
-            Payload payload, String url, HttpMethod method, HttpEntity<String> entity) {
+            Payload payload, String url, HttpMethod method, HttpEntity<String> entity) throws CustomerJobProcessException {
         // 是否启用重试
         boolean retryEnabled = Boolean.parseBoolean(payload.getOrThrow(Key.ENABLED_RETRY));
         boolean callbackEnabled = Boolean.parseBoolean(payload.getOrThrow(Key.ENABLED_CALLBACK));
@@ -81,6 +82,10 @@ public class HttpExec implements Exec {
             }
         } else {
             responseEntity = restTemplate.exchange(url, method, entity, String.class);
+        }
+        // 这里做判断主api的执行情况 若非2xx 直接抛异常
+        if (responseEntity != null && !responseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new CustomerJobProcessException("request failed, response: " + responseEntity);
         }
         if (callbackEnabled) {
             // 异步回调
@@ -112,6 +117,8 @@ public class HttpExec implements Exec {
                         } else {
                             log.info("callback success, response: " + body);
                         }
+                    } else {
+                        log.info("callback success, but response is not 2xx: " + body);
                     }
                     return responseEntity;
                 },

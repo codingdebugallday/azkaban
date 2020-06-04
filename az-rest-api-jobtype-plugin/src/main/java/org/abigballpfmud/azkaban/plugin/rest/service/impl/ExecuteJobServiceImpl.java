@@ -18,6 +18,7 @@ import org.abigballpfmud.azkaban.plugin.rest.model.Payload;
 import org.abigballpfmud.azkaban.plugin.rest.service.ExecuteJobService;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -137,14 +138,12 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
             MutablePair<ResponseEntity<String>, ResponseEntity<String>> mutablePair = exec.doExec(payload);
             // api
             ResponseEntity<String> respEntity = mutablePair.getLeft();
+            HttpStatus statusCode = respEntity.getStatusCode();
             HttpResp resp = new HttpResp(respEntity.getHeaders(),
                     respEntity.getBody(),
-                    respEntity.getStatusCode().getReasonPhrase(),
+                    statusCode.getReasonPhrase(),
                     respEntity.getStatusCodeValue());
-            if (!respEntity.getStatusCode().is2xxSuccessful()) {
-                throw new CustomerJobProcessException(
-                        String.format("request failed, response: %s", resp));
-            }
+            log.info("request success, code: " + statusCode.value());
             // callback
             if (Objects.isNull(mutablePair.getRight())) {
                 if (Boolean.parseBoolean(payload.getOrThrow(Key.CALLBACK_FINISH_SUCCESS))) {
@@ -157,11 +156,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
         } catch (IllegalArgumentException | CustomerRuntimeException | CustomerJobProcessException e) {
             throw e;
         } catch (RestClientResponseException e) {
-            HttpResp resp = new HttpResp(e.getResponseHeaders(),
-                    e.getResponseBodyAsString(),
-                    e.getStatusText(),
-                    e.getRawStatusCode());
-            return new Data<>(resp);
+            throw new CustomerRuntimeException("RestClientResponseException", e);
         } catch (Exception e) {
             throw new CustomerRuntimeException("http exec failed", e);
         }
