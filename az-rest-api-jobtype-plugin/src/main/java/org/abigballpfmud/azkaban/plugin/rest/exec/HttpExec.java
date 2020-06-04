@@ -87,7 +87,7 @@ public class HttpExec implements Exec {
             try {
                 callbackResponseEntity = doCallback(payload,
                         payload.getOrThrow(Key.CALLBACK_URI),
-                        new HttpEntity<>(null, applicationJsonHeader()));
+                        new HttpEntity<>(null, putHeader(payload)));
             } catch (Exception e) {
                 log.error("callback error,", e);
             }
@@ -129,12 +129,6 @@ public class HttpExec implements Exec {
                 Integer.parseInt(payload.getOrThrow(Key.RETRY_NUMBER)),
                 Integer.parseInt(payload.getNullable(Key.RETRY_INTERVAL)) * 1000L,
                 Boolean.parseBoolean(payload.getOrThrow(Key.ENABLED_RETRY_EXPONENTIAL)));
-    }
-
-    private HttpHeaders applicationJsonHeader() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        return headers;
     }
 
     @SuppressWarnings("unchecked")
