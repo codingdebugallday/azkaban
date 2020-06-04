@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.springframework.util.StringUtils;
 
 /**
  * <p>
@@ -38,8 +39,16 @@ public class JsonUtil {
             Matcher matcher = NUMBER_PATTERN.matcher(s1);
             if (s1.contains(ARRAY_LEFT) && s1.endsWith(ARRAY_RIGHT) && matcher.find()) {
                 String indexNodeName = s1.substring(0, s1.indexOf(ARRAY_LEFT));
-                ArrayNode arrayNode = (ArrayNode) node.get(indexNodeName);
-                JsonNode indexNode = arrayNode.get(Integer.parseInt(matcher.group(0)));
+                JsonNode indexNode;
+                if (StringUtils.isEmpty(indexNodeName)) {
+                    // [0].status 若是集合json [{},{}]
+                    String num = s1.substring(s1.indexOf(ARRAY_LEFT) + 1, s1.indexOf(ARRAY_RIGHT));
+                    indexNode = node.get(Integer.parseInt(num));
+                } else {
+                    // content[0].status 非集合json
+                    ArrayNode arrayNode = (ArrayNode) node.get(indexNodeName);
+                    indexNode = arrayNode.get(Integer.parseInt(matcher.group(0)));
+                }
                 return getJsonNodeValue(indexNode, s2);
             } else {
                 return getJsonNodeValue(node.get(s1), s2);
