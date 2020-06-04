@@ -1,9 +1,13 @@
 package org.abigballofmud.azkaban.common.auth;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import azkaban.utils.Props;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.abigballofmud.azkaban.common.constants.JobPropsKey;
@@ -16,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -172,6 +177,7 @@ class OAuth2ClientCredentialsAuthProvider implements AuthProvider {
 class OAuth2PasswordAuthProvider implements AuthProvider {
 
     private static final String KEY = "ACCESS_TOKEN";
+    private static final String AUTHORIZATION = "Authorization";
     private static final int TOKEN_MIN_EXPIRED_SECONDS = 10 * 60;
 
     private final RestTemplate tokenRestTemplate;
@@ -193,6 +199,21 @@ class OAuth2PasswordAuthProvider implements AuthProvider {
     public void provide(RestTemplate restTemplate, Props props, Logger log) {
         this.log = log;
         log.info("OAuth2 auth, grant_type: password");
+        // 若header中有Authorization 则不添加拦截器
+        String headerStr = props.getString(Key.HEADER);
+        if (!StringUtils.isEmpty(headerStr)) {
+            Map<String, Object> headerMap;
+            try {
+                headerMap = new ObjectMapper()
+                        .readValue(headerStr, new TypeReference<Map<String, Object>>() {
+                        });
+                if (headerMap.containsKey(AUTHORIZATION)) {
+                    return;
+                }
+            } catch (IOException e) {
+                throw new IllegalArgumentException("header error, header[" + headerStr + "]", e);
+            }
+        }
         // 判断是内部接口还是外部
         if (!props.getBoolean(Key.EXTERNAL, true)) {
             // 内部的话 读配置文件
