@@ -18,9 +18,11 @@ public class Key {
 
     /**
      * 接口来自平台内部还是外部，默认外部
+     * 调用主程序后，默认隔10秒调用callback接口
      * api重试，默认不启用
      * 默认重试3次，重试间隔1秒，默认指数递增
      */
+    public static final String TRIGGER_INTERVAL = PREFIX + "callback.trigger.interval";
     public static final String EXTERNAL = PREFIX + "external";
     public static final String ENABLED_RETRY = PREFIX + "retry.enabled";
     public static final String RETRY_NUMBER = PREFIX + "retry.number";

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -90,6 +91,7 @@ public class HttpExec implements Exec {
         if (callbackEnabled) {
             // 异步回调
             try {
+                TimeUnit.SECONDS.sleep(Long.parseLong(payload.getOrThrow(Key.TRIGGER_INTERVAL)));
                 callbackResponseEntity = doCallback(payload,
                         payload.getOrThrow(Key.CALLBACK_URI),
                         new HttpEntity<>(null, putHeader(payload)));

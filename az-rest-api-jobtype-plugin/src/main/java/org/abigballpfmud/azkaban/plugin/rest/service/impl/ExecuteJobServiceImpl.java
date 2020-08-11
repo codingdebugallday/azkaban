@@ -123,6 +123,7 @@ public class ExecuteJobServiceImpl implements ExecuteJobService {
                 .putArgs(Key.RETRY_INTERVAL, jobProps.getString(Key.RETRY_INTERVAL, "1"))
                 .putArgs(Key.ENABLED_RETRY_EXPONENTIAL, jobProps.getString(Key.ENABLED_RETRY_EXPONENTIAL, "true"))
                 // callback
+                .putArgs(Key.TRIGGER_INTERVAL, jobProps.getString(Key.TRIGGER_INTERVAL, "10"))
                 .putArgs(Key.ENABLED_CALLBACK, jobProps.getString(Key.ENABLED_CALLBACK, "false"))
                 .putArgs(Key.CALLBACK_URI, paramsUtil.handlePredefinedParams(jobProps.getString(Key.CALLBACK_URI, null), jobName))
                 .putArgs(Key.CALLBACK_INTERVAL, jobProps.getString(Key.CALLBACK_INTERVAL, "5"))
